@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { 
   Plus, 
   Share2, 
   Trash2, 
   TrendingUp,
   ShoppingCart,
-  Minus,
-  Check
+  Minus
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import AppSidebar, { mobileNavItems } from "@/components/AppSidebar";
+
 
 interface GroceryItem {
   id: string;
@@ -35,6 +35,7 @@ const initialItems: GroceryItem[] = [
 ];
 
 const GroceryList = () => {
+  const location = useLocation();
   const [items, setItems] = useState<GroceryItem[]>(initialItems);
 
   const categories = [...new Set(items.map(item => item.category))];
