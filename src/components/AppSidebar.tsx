@@ -15,7 +15,7 @@ const sidebarItems = [
   { icon: LayoutGrid, label: "Dashboard", path: "/dashboard" },
   { icon: Utensils, label: "Meal Planner", path: "/meal-planner" },
   { icon: MessageSquare, label: "NutriChat AI", path: "/chat" },
-  { icon: ShoppingBasket, label: "Grocery List", path: "/groceries" },
+  { icon: ShoppingBasket, label: "Grocery List", path: "/grocery-list" },
   { icon: User, label: "Profile", path: "/profile" },
 ];
 
