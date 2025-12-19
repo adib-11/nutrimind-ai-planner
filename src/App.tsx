@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import Planner from "./pages/Planner";
 import GroceryList from "./pages/GroceryList";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/chat" element={<Chat />} />
             <Route path="/meal-planner" element={<Planner />} />
             <Route path="/grocery-list" element={<GroceryList />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
