@@ -11,8 +11,23 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import MainLayout from "@/components/MainLayout";
+import RecipeDetailSheet from "@/components/RecipeDetailSheet";
+import { useToast } from "@/hooks/use-toast";
+
+interface MealData {
+  type: string;
+  time: string;
+  title: string;
+  image: string;
+  tags: { label: string; color: string }[];
+  calories: number;
+  cost: number;
+}
 
 const Planner = () => {
+  const { toast } = useToast();
+  const [selectedMeal, setSelectedMeal] = useState<MealData | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [activeDay, setActiveDay] = useState(1);
 
   const days = [
@@ -138,7 +153,11 @@ const Planner = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 whileHover={{ scale: 1.02 }}
-                className="bg-background/80 rounded-2xl p-4 md:p-6 shadow-sm border border-border/30 flex flex-col md:flex-row gap-4"
+                onClick={() => {
+                  setSelectedMeal(meal);
+                  setSheetOpen(true);
+                }}
+                className="bg-background/80 rounded-2xl p-4 md:p-6 shadow-sm border border-border/30 flex flex-col md:flex-row gap-4 cursor-pointer"
               >
                 {/* Meal Image */}
                 <div className="w-full md:w-24 h-32 md:h-24 rounded-xl overflow-hidden flex-shrink-0">
@@ -296,6 +315,20 @@ const Planner = () => {
           </div>
         </div>
       </div>
+
+      {/* Recipe Detail Sheet */}
+      <RecipeDetailSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        recipe={selectedMeal}
+        onMarkAsEaten={() => {
+          toast({
+            title: "Meal logged!",
+            description: `${selectedMeal?.title} has been marked as eaten.`,
+          });
+          setSheetOpen(false);
+        }}
+      />
     </MainLayout>
   );
 };
