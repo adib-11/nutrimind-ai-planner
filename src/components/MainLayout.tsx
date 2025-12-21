@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 import AppSidebar, { mobileNavItems } from "@/components/AppSidebar";
 import FloatingFoodDecorations from "@/components/FloatingFoodDecorations";
 
@@ -7,6 +8,13 @@ interface MainLayoutProps {
   children: ReactNode;
   showDecorations?: boolean;
 }
+
+// Page content animation variants
+const contentVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -12 },
+};
 
 const MainLayout = ({ children, showDecorations = true }: MainLayoutProps) => {
   const location = useLocation();
@@ -24,7 +32,17 @@ const MainLayout = ({ children, showDecorations = true }: MainLayoutProps) => {
       {/* Main Glass Card Container */}
       <div className="flex-1 p-4 md:my-4 md:mr-4 relative z-10">
         <div className="h-full w-full bg-background/60 backdrop-blur-xl rounded-[40px] shadow-2xl border border-border/50 overflow-hidden flex flex-col">
-          {children}
+          <motion.div
+            key={location.pathname}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={contentVariants}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="flex-1 flex flex-col overflow-hidden"
+          >
+            {children}
+          </motion.div>
         </div>
       </div>
 
@@ -36,14 +54,25 @@ const MainLayout = ({ children, showDecorations = true }: MainLayoutProps) => {
             <Link
               key={item.label}
               to={item.path}
-              className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-colors ${
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground"
-              }`}
+              className="relative flex flex-col items-center gap-1 p-2 rounded-xl"
             >
-              <item.icon className="w-5 h-5" />
-              <span className="text-xs font-medium">{item.label.split(" ")[0]}</span>
+              {/* Animated background for active state */}
+              {isActive && (
+                <motion.div
+                  layoutId="mobileNavIndicator"
+                  className="absolute inset-0 bg-primary rounded-xl"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <motion.div
+                whileTap={{ scale: 0.9 }}
+                className={`relative z-10 flex flex-col items-center gap-1 ${
+                  isActive ? "text-primary-foreground" : "text-muted-foreground"
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="text-xs font-medium">{item.label.split(" ")[0]}</span>
+              </motion.div>
             </Link>
           );
         })}

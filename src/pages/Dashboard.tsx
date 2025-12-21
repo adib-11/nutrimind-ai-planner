@@ -69,9 +69,11 @@ const Dashboard = () => {
                 <p className="text-muted-foreground text-sm mb-4 flex-1">
                   Get a weekly plan tailored to your budget & health goals.
                 </p>
-                <Button className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
-                  Create Plan
-                </Button>
+                <Link to="/meal-planner" className="w-full">
+                  <Button className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold">
+                    Create Plan
+                  </Button>
+                </Link>
               </div>
             </motion.div>
 

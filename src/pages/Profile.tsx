@@ -48,7 +48,7 @@ const Profile = () => {
   const bmiAngle = ((bmi - 15) / 25) * 180; // Map BMI 15-40 to 0-180 degrees
 
   return (
-    <MainLayout showDecorations={false}>
+    <MainLayout>
       <div className="flex-1 flex flex-col overflow-auto p-6 md:p-10 pb-24">
         {/* Header */}
         <div className="mb-8">
@@ -60,7 +60,7 @@ const Profile = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Identity Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg h-full">
+            <div className="bg-background/80 backdrop-blur-md rounded-3xl p-6 border border-border/30 shadow-lg h-full">
               {/* Avatar */}
               <div className="flex flex-col items-center mb-6">
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/40 flex items-center justify-center mb-4">
@@ -147,7 +147,7 @@ const Profile = () => {
           {/* Right Columns - Health & Diet Settings */}
           <div className="lg:col-span-2 space-y-6">
             {/* Health Conditions */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg">
+            <div className="bg-background/80 backdrop-blur-md rounded-3xl p-6 border border-border/30 shadow-lg">
               <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                 <Pill className="w-5 h-5 text-primary" />
                 Health Conditions
@@ -181,7 +181,7 @@ const Profile = () => {
             </div>
 
             {/* Budget & Preferences */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg">
+            <div className="bg-background/80 backdrop-blur-md rounded-3xl p-6 border border-border/30 shadow-lg">
               <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                 <Wallet className="w-5 h-5 text-primary" />
                 Dietary Constraints
@@ -249,7 +249,7 @@ const Profile = () => {
             </div>
 
             {/* Prescription Upload */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg">
+            <div className="bg-background/80 backdrop-blur-md rounded-3xl p-6 border border-border/30 shadow-lg">
               <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                 <UploadCloud className="w-5 h-5 text-primary" />
                 Prescription Upload

@@ -8,7 +8,8 @@ import {
   ShoppingBasket,
   User,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Leaf
 } from "lucide-react";
 
 const sidebarItems = [
@@ -49,7 +50,7 @@ const AppSidebar = ({ className = "" }: AppSidebarProps) => {
       {/* Logo */}
       <div className={`flex items-center mb-8 ${isExpanded ? "px-6" : "justify-center"}`}>
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
-          <Utensils className="w-5 h-5 text-primary-foreground" />
+          <Leaf className="w-5 h-5 text-primary-foreground" />
         </div>
         <AnimatePresence>
           {isExpanded && (
@@ -74,15 +75,29 @@ const AppSidebar = ({ className = "" }: AppSidebarProps) => {
             <Link
               key={item.label}
               to={item.path}
-              className={`flex items-center gap-3 rounded-xl transition-all duration-200 ${
+              className={`relative flex items-center gap-3 rounded-xl transition-colors duration-200 ${
                 isExpanded ? "px-4 py-3" : "w-12 h-12 justify-center"
               } ${
-                isActive 
-                  ? "bg-primary text-primary-foreground" 
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                !isActive && "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
+              {/* Animated active background */}
+              {isActive && (
+                <motion.div
+                  layoutId="sidebarActiveIndicator"
+                  className="absolute inset-0 bg-primary rounded-xl"
+                  transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                />
+              )}
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`relative z-10 flex items-center gap-3 ${
+                  isActive ? "text-primary-foreground" : ""
+                }`}
+              >
+                <item.icon className="w-5 h-5 flex-shrink-0" />
+              </motion.div>
               <AnimatePresence>
                 {isExpanded && (
                   <motion.span
@@ -90,7 +105,9 @@ const AppSidebar = ({ className = "" }: AppSidebarProps) => {
                     animate={{ opacity: 1, width: "auto" }}
                     exit={{ opacity: 0, width: 0 }}
                     transition={{ duration: 0.2 }}
-                    className="font-semibold text-sm whitespace-nowrap overflow-hidden"
+                    className={`relative z-10 font-semibold text-sm whitespace-nowrap overflow-hidden ${
+                      isActive ? "text-primary-foreground" : ""
+                    }`}
                   >
                     {item.label}
                   </motion.span>
@@ -100,29 +117,6 @@ const AppSidebar = ({ className = "" }: AppSidebarProps) => {
           );
         })}
       </nav>
-
-      {/* User Avatar */}
-      <div className={`mt-auto ${isExpanded ? "px-4" : "flex justify-center"}`}>
-        <div className={`flex items-center gap-3 ${isExpanded ? "px-4 py-3" : ""}`}>
-          <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-            <User className="w-5 h-5 text-muted-foreground" />
-          </div>
-          <AnimatePresence>
-            {isExpanded && (
-              <motion.div
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: "auto" }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <p className="font-semibold text-sm text-foreground whitespace-nowrap">User</p>
-                <p className="text-xs text-muted-foreground whitespace-nowrap">View Profile</p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
     </motion.aside>
   );
 };

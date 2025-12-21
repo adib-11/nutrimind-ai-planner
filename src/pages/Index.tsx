@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
 import HowItWorksSection from "@/components/HowItWorksSection";
@@ -10,7 +11,12 @@ import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <Helmet>
         <title>NutriMind - AI-Based Food Planner for Health & Fitness</title>
         <meta
@@ -34,7 +40,7 @@ const Index = () => {
         <CTASection />
         <Footer />
       </main>
-    </>
+    </motion.div>
   );
 };
 

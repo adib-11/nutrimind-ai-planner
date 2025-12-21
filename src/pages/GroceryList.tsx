@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
   Share2, 
@@ -61,7 +61,7 @@ const GroceryList = () => {
   const savings = 120;
 
   return (
-    <MainLayout showDecorations={false}>
+    <MainLayout>
       <div className="flex-1 flex flex-col overflow-hidden p-6 md:p-10">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -86,61 +86,76 @@ const GroceryList = () => {
           {/* Left Column - Shopping List */}
           <div className="flex-1 lg:w-[65%] space-y-6 overflow-y-auto pr-2 pb-20 md:pb-6">
             {categories.map((category) => (
-              <div key={category}>
+              <motion.div 
+                key={category}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+              >
                 <h3 className="text-sm font-bold text-foreground mb-3">{category}</h3>
                 <div className="space-y-2">
-                  {items
-                    .filter(item => item.category === category)
-                    .map((item) => (
-                      <motion.div
-                        key={item.id}
-                        layout
-                        className={`bg-white/80 backdrop-blur-sm rounded-xl p-4 flex items-center gap-4 transition-all duration-200 ${
-                          item.checked ? "opacity-50" : ""
-                        }`}
-                      >
-                        <Checkbox
-                          checked={item.checked}
-                          onCheckedChange={() => toggleItem(item.id)}
-                          className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <p className={`font-semibold text-foreground ${item.checked ? "line-through" : ""}`}>
-                            {item.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">Approx ৳{item.price}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateQuantity(item.id, -1)}
-                            className="w-8 h-8 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
-                          >
-                            <Minus className="w-4 h-4 text-muted-foreground" />
-                          </button>
-                          <span className="w-8 text-center font-semibold text-foreground">{item.quantity}</span>
-                          <button
-                            onClick={() => updateQuantity(item.id, 1)}
-                            className="w-8 h-8 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
-                          >
-                            <Plus className="w-4 h-4 text-muted-foreground" />
-                          </button>
-                        </div>
-                        <button
-                          onClick={() => deleteItem(item.id)}
-                          className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                  <AnimatePresence mode="popLayout">
+                    {items
+                      .filter(item => item.category === category)
+                      .map((item) => (
+                        <motion.div
+                          key={item.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.95, x: -20 }}
+                          transition={{ duration: 0.2 }}
+                          className={`bg-background/70 backdrop-blur-sm rounded-xl p-4 border border-border/30 flex items-center gap-4 transition-all duration-200 ${
+                            item.checked ? "opacity-50" : ""
+                          }`}
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </motion.div>
-                    ))}
+                          <Checkbox
+                            checked={item.checked}
+                            onCheckedChange={() => toggleItem(item.id)}
+                            className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className={`font-semibold text-foreground ${item.checked ? "line-through" : ""}`}>
+                              {item.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">Approx ৳{item.price}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => updateQuantity(item.id, -1)}
+                              className="w-8 h-8 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
+                            >
+                              <Minus className="w-4 h-4 text-muted-foreground" />
+                            </motion.button>
+                            <span className="w-8 text-center font-semibold text-foreground">{item.quantity}</span>
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => updateQuantity(item.id, 1)}
+                              className="w-8 h-8 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center transition-colors"
+                            >
+                              <Plus className="w-4 h-4 text-muted-foreground" />
+                            </motion.button>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => deleteItem(item.id)}
+                            className="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </motion.button>
+                        </motion.div>
+                      ))}
+                  </AnimatePresence>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
           {/* Right Column - Budget & Checkout */}
           <div className="lg:w-[35%] lg:sticky lg:top-0 lg:self-start">
-            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-lg space-y-6">
+            <div className="bg-background/80 backdrop-blur-md rounded-3xl p-6 border border-border/30 shadow-lg space-y-6">
               {/* Cost Estimation */}
               <div>
                 <h3 className="text-sm font-semibold text-muted-foreground mb-3">Cost Estimation</h3>
@@ -168,10 +183,13 @@ const GroceryList = () => {
 
               {/* Smart Order */}
               <div>
-                <h3 className="text-sm font-semibold text-muted-foreground mb-2">Too busy to shop?</h3>
+                <h3 className="text-sm font-semibold text-foreground mb-2">Too busy to shop?</h3>
                 <p className="text-xs text-muted-foreground mb-4">Order your groceries online and save time</p>
                 <Button 
-                  className="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-6 rounded-xl shadow-lg"
+                  className="w-full py-6 rounded-xl shadow-lg font-semibold text-white"
+                  style={{ 
+                    background: 'linear-gradient(to right, #f97316, #ea580c)',
+                  }}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Order via Chaldal

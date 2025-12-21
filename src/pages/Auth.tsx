@@ -31,7 +31,13 @@ const Auth = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center bg-background overflow-hidden px-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="relative min-h-screen w-full flex items-center justify-center bg-background overflow-hidden px-4"
+    >
       {/* Animated Background Blobs - GPU Accelerated */}
       <motion.div
         initial={{ x: -100, y: -100 }}
@@ -276,7 +282,7 @@ const Auth = () => {
           </CardContent>
         </Card>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 

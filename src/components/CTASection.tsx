@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CTASection = () => {
   return (
@@ -25,9 +26,11 @@ const CTASection = () => {
             and your local taste.
           </p>
           
-          <Button variant="hero" size="xl" className="group">
-            Generate My Plan
-            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+          <Button variant="hero" size="xl" className="group" asChild>
+            <Link to="/auth">
+              Generate My Plan
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+            </Link>
           </Button>
         </motion.div>
       </div>

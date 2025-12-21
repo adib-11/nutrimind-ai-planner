@@ -135,7 +135,13 @@ const Onboarding = () => {
   ];
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-[#f7fdec] to-[#e6f5d0] flex items-center justify-center p-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="min-h-screen w-full bg-gradient-to-br from-[#f7fdec] to-[#e6f5d0] flex items-center justify-center p-4"
+    >
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -556,7 +562,7 @@ const Onboarding = () => {
           )}
         </AnimatePresence>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 

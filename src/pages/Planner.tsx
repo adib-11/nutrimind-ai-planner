@@ -13,6 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import MainLayout from "@/components/MainLayout";
 import RecipeDetailSheet from "@/components/RecipeDetailSheet";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "react-router-dom";
 
 interface MealData {
   type: string;
@@ -108,37 +109,63 @@ const Planner = () => {
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Regenerate Week
               </Button>
-              <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Shopping List
+              <Button variant="outline" className="border-primary text-primary hover:bg-primary/10" asChild>
+                <Link to="/grocery-list">
+                  <ShoppingCart className="w-4 h-4 mr-2" />
+                  Shopping List
+                </Link>
               </Button>
             </div>
           </div>
 
           {/* Day Selector */}
           <div className="flex items-center gap-2">
-            <button className="p-2 rounded-full hover:bg-muted transition-colors">
+            <motion.button 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+            >
               <ChevronLeft className="w-5 h-5 text-muted-foreground" />
-            </button>
+            </motion.button>
             <div className="flex-1 flex gap-2 overflow-x-auto pb-2">
-              {days.map((d, index) => (
-                <button
-                  key={index}
-                  onClick={() => setActiveDay(index)}
-                  className={`flex-shrink-0 px-4 py-2 rounded-full transition-all duration-200 ${
-                    activeDay === index
-                      ? "bg-primary text-primary-foreground font-semibold"
-                      : "bg-background/50 text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  <span className="text-xs">{d.day}</span>
-                  <span className="block text-sm font-medium">{d.date}</span>
-                </button>
-              ))}
+              {days.map((d, index) => {
+                const isActive = activeDay === index;
+                return (
+                  <button
+                    key={index}
+                    onClick={() => setActiveDay(index)}
+                    className="relative flex-shrink-0 px-4 py-2 rounded-full"
+                  >
+                    {/* Animated active background */}
+                    {isActive && (
+                      <motion.div
+                        layoutId="daySelector"
+                        className="absolute inset-0 bg-primary rounded-full"
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                      />
+                    )}
+                    <motion.div
+                      whileTap={{ scale: 0.95 }}
+                      className={`relative z-10 ${
+                        isActive
+                          ? "text-primary-foreground font-semibold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <span className="text-xs">{d.day}</span>
+                      <span className="block text-sm font-medium">{d.date}</span>
+                    </motion.div>
+                  </button>
+                );
+              })}
             </div>
-            <button className="p-2 rounded-full hover:bg-muted transition-colors">
+            <motion.button 
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="p-2 rounded-full hover:bg-muted transition-colors"
+            >
               <ChevronRight className="w-5 h-5 text-muted-foreground" />
-            </button>
+            </motion.button>
           </div>
         </div>
 
