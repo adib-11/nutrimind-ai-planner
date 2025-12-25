@@ -1,8 +1,8 @@
 import { useRef, useState, useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Utensils, Filter, Wallet } from "lucide-react";
-import appMockup from "@/assets/app-mockup.png";
+import { Utensils, Filter, Wallet, Check } from "lucide-react";
+import foodPlate from "@/assets/food-plate.png";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -10,8 +10,7 @@ interface FeatureItem {
   icon: React.ReactNode;
   title: string;
   description: string;
-  phoneText: string;
-  phoneSubtext?: string;
+  dashboardContent: "food" | "filter" | "budget";
 }
 
 const features: FeatureItem[] = [
@@ -20,24 +19,21 @@ const features: FeatureItem[] = [
     title: "Authentic Local Food",
     description:
       "Our AI understands Bangladeshi cuisine. From Chicken Bhuna to Hilsa, we plan meals with ingredients you actually use.",
-    phoneText: "Chicken Bhuna & Rice",
-    phoneSubtext: "Traditional Recipe",
+    dashboardContent: "food",
   },
   {
     icon: <Filter className="w-8 h-8 text-primary" />,
     title: "Smart Health Filters",
     description:
       "Managing diabetes, allergies, or specific health conditions? Our OCR reads prescriptions and adapts your meal plan automatically.",
-    phoneText: "Diabetes Mode Active",
-    phoneSubtext: "Low Glycemic Index",
+    dashboardContent: "filter",
   },
   {
     icon: <Wallet className="w-8 h-8 text-primary" />,
     title: "Budget Optimization",
     description:
       "Set your weekly budget and we'll plan nutritious meals that respect your wallet. No expensive imported ingredients required.",
-    phoneText: "Budget Tracker: ৳250",
-    phoneSubtext: "Weekly Budget: ৳2,500",
+    dashboardContent: "budget",
   },
 ];
 
@@ -121,41 +117,100 @@ const FeaturesSectionPinned = () => {
             ))}
           </div>
 
-          {/* Right Column - CSS Sticky Phone */}
+          {/* Right Column - Floating Web Dashboard */}
           <div className="hidden lg:flex lg:w-1/2 sticky top-0 h-screen items-center justify-center">
             <div
-              className="relative w-full max-w-[320px] h-[640px]"
+              className="relative w-full max-w-[600px] aspect-video"
               style={{ willChange: "transform" }}
             >
-              {/* Phone frame */}
-              <div className="relative w-full h-full rounded-[3rem] border-[8px] border-foreground/10 bg-card shadow-float overflow-hidden">
-                {/* Phone notch */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-6 bg-foreground/10 rounded-b-2xl z-20" />
-
-                {/* App mockup */}
-                <img
-                  src={appMockup}
-                  alt="NutriMind App"
-                  className="w-full h-full object-cover"
-                />
-
-                {/* Dynamic overlay based on active feature */}
-                <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-t from-background/90 via-background/50 to-transparent transition-all duration-500">
-                  <div className="absolute bottom-12 left-0 right-0 px-6">
-                    <div
-                      key={activeFeature}
-                      className="bg-card/95 backdrop-blur-md border border-primary/30 rounded-2xl p-5 shadow-card animate-fade-in"
-                    >
-                      <p className="text-primary font-bold text-lg">
-                        {features[activeFeature]?.phoneText}
-                      </p>
-                      {features[activeFeature]?.phoneSubtext && (
-                        <p className="text-muted-foreground text-sm mt-1">
-                          {features[activeFeature].phoneSubtext}
-                        </p>
-                      )}
+              {/* Glass Card Dashboard */}
+              <div className="relative w-full h-full rounded-xl border-2 border-border/30 bg-card/80 backdrop-blur-xl shadow-2xl overflow-hidden">
+                {/* Browser Header */}
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-border/30 bg-muted/50">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-destructive/60" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                  </div>
+                  <div className="flex-1 mx-4">
+                    <div className="bg-background/50 rounded-md px-3 py-1 text-xs text-muted-foreground text-center">
+                      nutrimind.app/dashboard
                     </div>
                   </div>
+                </div>
+
+                {/* Dashboard Content */}
+                <div className="p-6 h-[calc(100%-48px)] flex items-center justify-center">
+                  {/* Food Content */}
+                  {features[activeFeature]?.dashboardContent === "food" && (
+                    <div key="food" className="animate-fade-in w-full">
+                      <div className="bg-background/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-card">
+                        <div className="flex items-center gap-4">
+                          <div className="w-24 h-24 rounded-xl overflow-hidden bg-primary/10 flex items-center justify-center">
+                            <img src={foodPlate} alt="Chicken Bhuna" className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-xl font-bold text-foreground">Chicken Bhuna & Rice</h4>
+                            <p className="text-muted-foreground text-sm mt-1">Traditional Bangladeshi Recipe</p>
+                            <div className="flex gap-2 mt-3">
+                              <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">450 kcal</span>
+                              <span className="px-2 py-1 bg-primary/20 text-primary text-xs rounded-full">35g Protein</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Filter Content */}
+                  {features[activeFeature]?.dashboardContent === "filter" && (
+                    <div key="filter" className="animate-fade-in w-full">
+                      <div className="bg-background/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-card">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-lg font-bold text-foreground">Health Filters</h4>
+                          <span className="px-3 py-1 bg-green-500/20 text-green-600 text-xs font-semibold rounded-full flex items-center gap-1">
+                            <Check className="w-3 h-3" /> Active
+                          </span>
+                        </div>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-3 bg-primary/10 rounded-xl border border-primary/30">
+                            <span className="font-medium text-foreground">Diabetes Mode</span>
+                            <div className="w-10 h-6 bg-primary rounded-full flex items-center justify-end px-1">
+                              <div className="w-4 h-4 bg-background rounded-full" />
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between p-3 bg-muted/50 rounded-xl">
+                            <span className="text-muted-foreground">Low Glycemic Index</span>
+                            <Check className="w-4 h-4 text-primary" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Budget Content */}
+                  {features[activeFeature]?.dashboardContent === "budget" && (
+                    <div key="budget" className="animate-fade-in w-full">
+                      <div className="bg-background/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-card">
+                        <h4 className="text-lg font-bold text-foreground mb-4">Daily Budget Tracker</h4>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between text-sm mb-2">
+                              <span className="text-muted-foreground">Today's Spending</span>
+                              <span className="font-bold text-foreground">৳180 / ৳250</span>
+                            </div>
+                            <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-gradient-to-r from-primary to-primary/70 rounded-full transition-all duration-500" style={{ width: "72%" }} />
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2">
+                            <span className="text-sm text-muted-foreground">Weekly Budget</span>
+                            <span className="text-primary font-bold">৳1,260 / ৳2,500</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -164,16 +219,18 @@ const FeaturesSectionPinned = () => {
             </div>
           </div>
 
-          {/* Mobile phone (non-sticky) */}
+          {/* Mobile Dashboard (non-sticky) */}
           <div className="lg:hidden flex justify-center py-10">
-            <div className="relative w-full max-w-[280px] h-[560px]">
-              <div className="relative w-full h-full rounded-[2.5rem] border-[6px] border-foreground/10 bg-card shadow-float overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/3 h-5 bg-foreground/10 rounded-b-xl z-20" />
-                <img
-                  src={appMockup}
-                  alt="NutriMind App"
-                  className="w-full h-full object-cover"
-                />
+            <div className="relative w-full max-w-[320px] aspect-video rounded-xl border-2 border-border/30 bg-card/80 backdrop-blur-xl shadow-2xl overflow-hidden">
+              <div className="flex items-center gap-2 px-3 py-2 border-b border-border/30 bg-muted/50">
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-destructive/60" />
+                  <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+                  <div className="w-2 h-2 rounded-full bg-green-500/60" />
+                </div>
+              </div>
+              <div className="p-4 text-center">
+                <p className="text-sm text-muted-foreground">NutriMind Dashboard</p>
               </div>
             </div>
           </div>
