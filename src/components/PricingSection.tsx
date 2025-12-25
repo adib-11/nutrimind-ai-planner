@@ -100,12 +100,15 @@ const PricingSection = () => {
     <section
       ref={sectionRef}
       id="pricing"
-      className="py-20 lg:py-32 bg-background relative overflow-hidden"
+      className="py-20 lg:py-32 relative overflow-hidden"
     >
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" />
+      {/* Background layer - below the life line */}
+      <div className="absolute inset-0 bg-background" style={{ zIndex: 1 }} />
+      
+      {/* Background gradient - above bg, below life line */}
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent pointer-events-none" style={{ zIndex: 2 }} />
 
-      <div className="container mx-auto px-4 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 lg:px-8 relative" style={{ zIndex: 15 }}>
         {/* Section Header */}
         <div className="text-center mb-16">
           <p className="text-xs lg:text-sm font-bold uppercase tracking-widest text-primary mb-4">

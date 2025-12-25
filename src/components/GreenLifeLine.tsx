@@ -1,114 +1,82 @@
-import { useRef, useEffect, useState } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useEffect, useState, useRef } from "react";
 
 const GreenLifeLine = () => {
   const pathRef = useRef<SVGPathElement>(null);
-  const svgRef = useRef<SVGSVGElement>(null);
-  const [pageHeight, setPageHeight] = useState(0);
+  const [pathLength, setPathLength] = useState(0);
+  const [scrollProgress, setScrollProgress] = useState(0.08);
 
+  // Get path length after mount
   useEffect(() => {
-    // Get full document height
-    const updateHeight = () => {
-      setPageHeight(document.documentElement.scrollHeight);
+    const updateLength = () => {
+      if (pathRef.current) {
+        const length = pathRef.current.getTotalLength();
+        setPathLength(length);
+      }
     };
     
-    updateHeight();
-    window.addEventListener("resize", updateHeight);
-    
-    // Delay to ensure page is fully rendered
-    const timeout = setTimeout(updateHeight, 500);
-
-    return () => {
-      window.removeEventListener("resize", updateHeight);
-      clearTimeout(timeout);
-    };
+    updateLength();
+    const timeout = setTimeout(updateLength, 100);
+    return () => clearTimeout(timeout);
   }, []);
 
+  // Scroll listener
   useEffect(() => {
-    if (!pathRef.current || !svgRef.current || pageHeight === 0) return;
-
-    const path = pathRef.current;
-    const length = path.getTotalLength();
-
-    // Set initial state - line is hidden
-    gsap.set(path, {
-      strokeDasharray: length,
-      strokeDashoffset: length,
-    });
-
-    // Animate the line drawing based on scroll
-    const animation = gsap.to(path, {
-      strokeDashoffset: 0,
-      ease: "none",
-      scrollTrigger: {
-        trigger: "body",
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 0.5,
-      },
-    });
-
-    return () => {
-      animation.kill();
-      ScrollTrigger.getAll().forEach(t => {
-        if (t.vars.trigger === "body") t.kill();
-      });
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(1, Math.max(0.08, scrollTop / Math.max(docHeight, 1)));
+      setScrollProgress(progress);
     };
-  }, [pageHeight]);
 
-  if (pageHeight === 0) return null;
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const dashOffset = pathLength > 0 ? pathLength * (1 - scrollProgress) : 0;
 
   return (
-    <div
-      className="pointer-events-none"
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        width: "100%",
-        height: `${pageHeight}px`,
-        zIndex: 1,
-        overflow: "visible",
-      }}
+    <svg
+      className="fixed top-0 left-0 w-screen h-screen pointer-events-none"
+      style={{ zIndex: 4 }}
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      aria-hidden="true"
     >
-      <svg
-        ref={svgRef}
-        className="pointer-events-none"
-        preserveAspectRatio="none"
-        viewBox="0 0 100 1000"
+      {/* Glow filter for premium look */}
+      <defs>
+        <filter id="greenGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="0.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+
+      {/* The winding S-curve path - lime green connector */}
+      <path
+        ref={pathRef}
+        d="
+          M 50 0
+          Q 20 12, 50 25
+          T 50 50
+          Q 80 62, 50 75
+          T 50 100
+        "
+        fill="none"
+        stroke="#C4D600"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        opacity="0.7"
+        filter="url(#greenGlow)"
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          willChange: "transform",
+          strokeDasharray: pathLength || 1000,
+          strokeDashoffset: dashOffset,
+          transition: "stroke-dashoffset 0.15s ease-out",
         }}
-      >
-        <path
-          ref={pathRef}
-          d="
-            M 50 0
-            C 50 80, 15 120, 50 180
-            S 85 240, 50 300
-            C 15 360, 85 420, 50 480
-            S 15 540, 50 600
-            C 85 660, 15 720, 50 780
-            S 85 840, 50 900
-            C 15 960, 50 1000, 50 1000
-          "
-          fill="none"
-          stroke="#C4D600"
-          strokeWidth="3"
-          strokeLinecap="round"
-          opacity="0.7"
-          style={{ willChange: "stroke-dashoffset" }}
-        />
-      </svg>
-    </div>
+      />
+    </svg>
   );
 };
 

@@ -201,10 +201,12 @@ const HeroSection = () => {
   return (
     <section
       ref={containerRef}
-      className="relative min-h-screen bg-background overflow-hidden pt-20 lg:pt-0"
+      className="relative min-h-screen overflow-hidden pt-20 lg:pt-0"
     >
-      {/* Floating Leaves */}
-      <div className="absolute inset-0 pointer-events-none z-0">
+      {/* Background layer - below the life line */}
+      <div className="absolute inset-0 bg-background" style={{ zIndex: 1 }} />
+      {/* Floating Leaves - above background, below life line */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 2 }}>
         <img
           ref={leaf1Ref}
           src={leaf1}
@@ -235,7 +237,7 @@ const HeroSection = () => {
         />
       </div>
 
-      <div className="container mx-auto px-4 lg:px-8 relative z-10">
+      <div className="container mx-auto px-4 lg:px-8 relative" style={{ zIndex: 15 }}>
         <div className="flex flex-col lg:flex-row items-center min-h-screen gap-8 lg:gap-12 py-12 lg:py-0">
           {/* Left Column - Content */}
           <div ref={contentRef} className="flex-1 flex flex-col justify-center text-center lg:text-left">
