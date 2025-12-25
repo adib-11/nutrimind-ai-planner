@@ -22,13 +22,13 @@ interface PricingPlan {
 const pricingPlans: PricingPlan[] = [
   {
     name: "Free Tier",
-    price: "BDT 0",
+    price: "৳0",
     period: "/month",
     icon: <Leaf className="w-6 h-6 text-primary" />,
     features: [
       "3 meal suggestions/week",
-      "Basic calorie tracking",
       "Limited to 30 recipes",
+      "Basic calorie tracking",
       "Ad-supported",
     ],
     buttonText: "Get Started",
@@ -36,16 +36,16 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Premium Individual",
-    price: "BDT 199",
+    price: "৳199",
     period: "/month",
-    yearlyPrice: "or BDT 1,999/year",
+    yearlyPrice: "or ৳1,999/year",
     icon: <Sparkles className="w-6 h-6 text-primary" />,
     features: [
-      "Full AI personalization",
-      "Unlimited meal plans",
-      "Prescription analysis (OCR)",
-      "Budget optimization",
-      "No ads",
+      "Full AI Personalization",
+      "Unlimited Meal Plans",
+      "Prescription Analysis (OCR)",
+      "Budget Optimization",
+      "No Ads",
     ],
     buttonText: "Subscribe Now",
     buttonVariant: "hero",
@@ -53,17 +53,14 @@ const pricingPlans: PricingPlan[] = [
   },
   {
     name: "Family Plan",
-    price: "BDT 399",
+    price: "৳399",
     period: "/month",
-    yearlyPrice: "or BDT 3,999/year",
+    yearlyPrice: "or ৳3,999/year",
     icon: <Users className="w-6 h-6 text-primary" />,
     features: [
-      "Up to 4 members",
-      "Full AI personalization",
-      "Unlimited meal plans",
-      "Prescription analysis (OCR)",
-      "Budget optimization",
-      "No ads",
+      "Up to 4 Family Members",
+      "All Premium Features",
+      "Centralized Grocery List",
     ],
     buttonText: "Choose Family",
     buttonVariant: "outline",
@@ -135,7 +132,7 @@ const PricingSection = () => {
               {plan.isPopular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
                   <span className="bg-primary text-primary-foreground text-xs font-bold px-4 py-1.5 rounded-full shadow-lg">
-                    Recommended
+                    Most Popular
                   </span>
                 </div>
               )}

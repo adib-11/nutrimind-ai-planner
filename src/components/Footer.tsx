@@ -17,7 +17,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="py-8 bg-background border-t border-border">
+    <footer id="contact" className="py-8 bg-background border-t border-border">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo */}

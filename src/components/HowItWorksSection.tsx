@@ -136,7 +136,7 @@ const HowItWorksSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-20 lg:py-28 bg-secondary relative overflow-hidden">
+    <section ref={sectionRef} id="about" className="py-20 lg:py-28 bg-secondary relative overflow-hidden">
       <div className="container mx-auto px-4 lg:px-8">
         {/* Header */}
         <div ref={headerRef} className="text-center mb-16">

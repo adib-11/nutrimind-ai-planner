@@ -2,35 +2,22 @@ import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 
 const CustomCursor = () => {
-  const dotRef = useRef<HTMLDivElement>(null);
-  const followerRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLDivElement>(null);
   const [isHovering, setIsHovering] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const dot = dotRef.current;
-    const follower = followerRef.current;
+    const cursor = cursorRef.current;
+    if (!cursor) return;
 
-    if (!dot || !follower) return;
-
-    // Quick setters for smooth movement
-    const dotX = gsap.quickTo(dot, "x", { duration: 0.1, ease: "power2.out" });
-    const dotY = gsap.quickTo(dot, "y", { duration: 0.1, ease: "power2.out" });
-    const followerX = gsap.quickTo(follower, "x", {
-      duration: 0.3,
-      ease: "power3.out",
-    });
-    const followerY = gsap.quickTo(follower, "y", {
-      duration: 0.3,
-      ease: "power3.out",
-    });
+    // Quick setters for instant tracking
+    const cursorX = gsap.quickTo(cursor, "x", { duration: 0.1, ease: "power2.out" });
+    const cursorY = gsap.quickTo(cursor, "y", { duration: 0.1, ease: "power2.out" });
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isVisible) setIsVisible(true);
-      dotX(e.clientX);
-      dotY(e.clientY);
-      followerX(e.clientX);
-      followerY(e.clientY);
+      cursorX(e.clientX);
+      cursorY(e.clientY);
     };
 
     const handleMouseEnter = () => setIsVisible(true);
@@ -67,13 +54,11 @@ const CustomCursor = () => {
 
   // Update hover state animation
   useEffect(() => {
-    if (!followerRef.current) return;
+    if (!cursorRef.current) return;
 
-    gsap.to(followerRef.current, {
-      scale: isHovering ? 1.5 : 1,
-      borderWidth: isHovering ? 2 : 1,
-      opacity: isHovering ? 1 : 0.6,
-      duration: 0.25,
+    gsap.to(cursorRef.current, {
+      scale: isHovering ? 1.2 : 1,
+      duration: 0.2,
       ease: "power2.out",
     });
   }, [isHovering]);
@@ -84,26 +69,55 @@ const CustomCursor = () => {
   }
 
   return (
-    <>
-      {/* Dot */}
-      <div
-        ref={dotRef}
-        className="fixed top-0 left-0 w-2 h-2 bg-primary rounded-full pointer-events-none z-[9999] -translate-x-1/2 -translate-y-1/2 mix-blend-difference"
-        style={{
-          opacity: isVisible ? 1 : 0,
-          willChange: "transform",
-        }}
-      />
-      {/* Follower */}
-      <div
-        ref={followerRef}
-        className="fixed top-0 left-0 w-10 h-10 border border-primary rounded-full pointer-events-none z-[9998] -translate-x-1/2 -translate-y-1/2"
-        style={{
-          opacity: isVisible ? 0.6 : 0,
-          willChange: "transform",
-        }}
-      />
-    </>
+    <div
+      ref={cursorRef}
+      className="fixed top-0 left-0 pointer-events-none z-[9999]"
+      style={{
+        opacity: isVisible ? 1 : 0,
+        willChange: "transform",
+        transform: "translate(-4px, -2px)",
+      }}
+    >
+      {isHovering ? (
+        // Hand pointer on hover
+        <svg
+          width="32"
+          height="32"
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Hand/pointer icon */}
+          <path
+            d="M17 8V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v13l-2.3-2.3a2 2 0 0 0-2.83 0 2 2 0 0 0 0 2.83L14 24c1.1 1.1 2.6 1.7 4.2 1.7H21a6 6 0 0 0 6-6v-4.5a2.5 2.5 0 0 0-2.5-2.5 2.5 2.5 0 0 0-2.5 2.5V14a2 2 0 0 0-2-2 2 2 0 0 0-2 2v-2a2 2 0 0 0-2-2 2 2 0 0 0-2 2v-2a2 2 0 0 0 3-2Z"
+            fill="hsl(68, 100%, 42%)"
+            stroke="#000"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ) : (
+        // Sharp arrow pointer (default)
+        <svg
+          width="28"
+          height="32"
+          viewBox="0 0 28 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {/* Sharp triangular arrow */}
+          <path
+            d="M4 2L4 26L10 20L16 30L20 28L14 18L24 18L4 2Z"
+            fill="hsl(68, 100%, 42%)"
+            stroke="#000"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      )}
+    </div>
   );
 };
 
