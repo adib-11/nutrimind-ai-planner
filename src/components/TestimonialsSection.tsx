@@ -65,15 +65,12 @@ const TestimonialsSection = () => {
   ];
 
   return (
-    <section className="py-20 lg:py-28 relative overflow-hidden">
-      {/* Background layer - below the life line */}
-      <div className="absolute inset-0 bg-background" style={{ zIndex: 1 }} />
+    <section className="py-20 lg:py-28 bg-background relative overflow-hidden">
+      {/* Decorative Leaves */}
+      <div className="absolute top-20 left-10 w-20 h-20 bg-lime-light rounded-full opacity-30 blur-2xl" />
+      <div className="absolute bottom-20 right-10 w-32 h-32 bg-lime-light rounded-full opacity-30 blur-2xl" />
       
-      {/* Decorative Leaves - above bg, below life line */}
-      <div className="absolute top-20 left-10 w-20 h-20 bg-lime-light rounded-full opacity-30 blur-2xl" style={{ zIndex: 2 }} />
-      <div className="absolute bottom-20 right-10 w-32 h-32 bg-lime-light rounded-full opacity-30 blur-2xl" style={{ zIndex: 2 }} />
-      
-      <div className="container mx-auto px-4 lg:px-8 relative" style={{ zIndex: 15 }}>
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

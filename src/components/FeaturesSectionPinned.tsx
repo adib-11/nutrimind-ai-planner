@@ -70,12 +70,9 @@ const FeaturesSectionPinned = () => {
     <section
       ref={sectionRef}
       id="features"
-      className="relative"
+      className="relative bg-background"
     >
-      {/* Background layer - below the life line */}
-      <div className="absolute inset-0 bg-background" style={{ zIndex: 1 }} />
-      
-      <div className="container mx-auto px-4 lg:px-8 relative" style={{ zIndex: 15 }}>
+      <div className="container mx-auto px-4 lg:px-8">
         {/* Section Header */}
         <div className="text-center py-20">
           <p className="text-xs lg:text-sm font-bold uppercase tracking-widest text-primary mb-4">

@@ -209,4 +209,14 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* GPU Hardware Acceleration for smooth animations */
+  .green-life-line,
+  .web-dashboard-card,
+  .floating-bubble,
+  .hero-plate {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
 }

@@ -107,20 +107,17 @@ const ProblemSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen bg-secondary flex items-center justify-center overflow-hidden"
     >
-      {/* Background layer - below the life line */}
-      <div className="absolute inset-0 bg-secondary" style={{ zIndex: 1 }} />
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary to-secondary pointer-events-none" />
       
-      {/* Background decoration - above bg, below life line */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary to-secondary pointer-events-none" style={{ zIndex: 2 }} />
-      
-      {/* Floating particles - above life line */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 6 }}>
+      {/* Floating particles */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(15)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-2 h-2 rounded-full bg-primary/20"
+            className="absolute w-2 h-2 rounded-full bg-primary/20 floating-bubble"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
@@ -130,7 +127,7 @@ const ProblemSection = () => {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 relative" style={{ zIndex: 15 }}>
+      <div className="container mx-auto px-4 relative z-10">
         {/* Main Question Text */}
         <div
           ref={textRef}
