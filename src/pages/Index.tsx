@@ -40,8 +40,10 @@ const Index = () => {
         <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2" />
       </Helmet>
       <CustomCursor />
+      {/* Green Life Line - z-index: 0, sits behind all content */}
       <GreenLifeLine />
-      <main className="relative">
+      {/* Main content - z-index: 10, sits above the line */}
+      <main className="relative" style={{ zIndex: 10, position: "relative" }}>
         <Navbar />
         <HeroSection />
         <ProblemSection />
