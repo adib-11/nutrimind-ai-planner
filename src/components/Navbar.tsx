@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Menu, X, Smartphone } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import gsap from "gsap";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
+
+gsap.registerPlugin(ScrollToPlugin);
 
 const navLinks = [
   { label: "About", href: "#about" },
@@ -16,11 +19,23 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
 
+  const handleScroll = (id: string) => {
+    const element = document.querySelector(id);
+    if (element) {
+      gsap.to(window, {
+        duration: 1,
+        scrollTo: { y: element, offsetY: 80 },
+        ease: "power3.inOut",
+      });
+    }
+    setIsOpen(false);
+  };
+
   const handleGetApp = (e: React.MouseEvent) => {
     e.preventDefault();
     toast({
-      title: "Coming Soon!",
-      description: "Our mobile app is coming soon! Stay tuned.",
+      title: "Coming Soon to iOS & Android!",
+      description: "We are currently in Beta. Stay tuned!",
     });
   };
 
@@ -43,13 +58,13 @@ const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
+              <button
                 key={link.label}
-                href={link.href}
-                className="nav-link text-sm"
+                onClick={() => handleScroll(link.href)}
+                className="nav-link text-sm bg-transparent border-none cursor-pointer"
               >
                 {link.label}
-              </a>
+              </button>
             ))}
           </div>
 
@@ -80,14 +95,13 @@ const Navbar = () => {
           >
             <div className="flex flex-col gap-4">
               {navLinks.map((link) => (
-                <a
+                <button
                   key={link.label}
-                  href={link.href}
-                  className="nav-link text-base py-2"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => handleScroll(link.href)}
+                  className="nav-link text-base py-2 bg-transparent border-none cursor-pointer text-left"
                 >
                   {link.label}
-                </a>
+                </button>
               ))}
               <Button variant="nav-cta" size="default" className="w-full mt-2" onClick={handleGetApp}>
                 Get the App

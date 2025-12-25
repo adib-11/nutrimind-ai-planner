@@ -128,7 +128,7 @@ const FeaturesSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-20 lg:py-28 bg-background relative overflow-hidden">
+    <section ref={sectionRef} id="features" className="py-20 lg:py-28 bg-background relative overflow-hidden">
       {/* Ingredient Rain (behind the mockup) */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {ingredients.map((ing, index) => (
