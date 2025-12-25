@@ -73,21 +73,28 @@ const PricingSection = () => {
 
   useGSAP(() => {
     const cards = cardsRef.current?.children;
-    if (!cards) return;
+    if (!cards || cards.length === 0) return;
 
-    gsap.from(cards, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 70%",
-        toggleActions: "play none none reverse",
-      },
-      y: 80,
-      opacity: 0,
-      duration: 0.8,
-      stagger: 0.15,
-      ease: "power3.out",
-    });
-  }, []);
+    // Set initial state
+    gsap.set(cards, { opacity: 1, y: 0 });
+
+    gsap.fromTo(
+      cards,
+      { y: 60, opacity: 0 },
+      {
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top 80%",
+          toggleActions: "play none none none",
+        },
+        y: 0,
+        opacity: 1,
+        duration: 0.7,
+        stagger: 0.15,
+        ease: "power3.out",
+      }
+    );
+  }, { scope: sectionRef });
 
   return (
     <section
