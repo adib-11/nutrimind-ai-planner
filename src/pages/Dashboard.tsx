@@ -160,12 +160,12 @@ const Dashboard = () => {
 
   return (
     <MainLayout>
-      <div ref={containerRef}>
-        <main className="flex-1 flex flex-col p-6 md:p-8 overflow-auto pb-20 md:pb-8">
+      <div ref={containerRef} className="flex-1 flex flex-col h-full">
+        <main className="flex-1 flex flex-col p-6 md:p-8 overflow-auto pb-20 md:pb-8 h-full">
           {/* Welcome Banner */}
           <div
             ref={bannerRef}
-            className="w-full bg-gradient-to-r from-[hsl(68,80%,75%)] to-[hsl(68,70%,85%)] rounded-3xl p-6 md:p-8 mb-6 flex items-center justify-between overflow-hidden relative"
+            className="w-full bg-gradient-to-r from-[hsl(68,80%,75%)] to-[hsl(68,70%,85%)] rounded-3xl p-6 md:p-8 mb-6 flex items-center justify-between overflow-hidden relative flex-shrink-0"
           >
             <div className="z-10">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">
@@ -183,13 +183,13 @@ const Dashboard = () => {
           </div>
 
           {/* Bento Grid Layout */}
-          <div ref={bentoGridRef} className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div ref={bentoGridRef} className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 min-h-0">
             {/* Main Action Cards - Span 2 columns */}
-            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 h-full">
               {/* Generate Meal Plan Card */}
-              <div className="dashboard-card bg-background/90 backdrop-blur-md rounded-3xl overflow-hidden border border-border/40 shadow-xl cursor-pointer flex flex-col">
+              <div className="dashboard-card bg-background/90 backdrop-blur-md rounded-3xl overflow-hidden border border-border/40 shadow-xl cursor-pointer flex flex-col h-full">
                 {/* Image area - Healthy Rice Bowl */}
-                <div className="h-40 md:h-48 bg-gradient-to-br from-[hsl(68,60%,90%)] to-[hsl(68,50%,80%)] flex items-center justify-center overflow-hidden relative">
+                <div className="h-40 md:h-48 bg-gradient-to-br from-[hsl(68,60%,90%)] to-[hsl(68,50%,80%)] flex items-center justify-center overflow-hidden relative flex-shrink-0">
                   <img
                     ref={riceBowlRef}
                     src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&q=80"
@@ -221,9 +221,9 @@ const Dashboard = () => {
               </div>
 
               {/* Nutrition Chatbot Card */}
-              <div className="dashboard-card bg-background/90 backdrop-blur-md rounded-3xl overflow-hidden border border-border/40 shadow-xl cursor-pointer flex flex-col">
+              <div className="dashboard-card bg-background/90 backdrop-blur-md rounded-3xl overflow-hidden border border-border/40 shadow-xl cursor-pointer flex flex-col h-full">
                 {/* Image area - AI Brain/Sparkles */}
-                <div className="h-40 md:h-48 bg-gradient-to-br from-[hsl(270,60%,92%)] to-[hsl(280,50%,85%)] flex items-center justify-center overflow-hidden">
+                <div className="h-40 md:h-48 bg-gradient-to-br from-[hsl(270,60%,92%)] to-[hsl(280,50%,85%)] flex items-center justify-center overflow-hidden flex-shrink-0">
                   <div ref={aiIconRef} className="relative">
                     <div className="w-24 h-24 rounded-full bg-background/50 flex items-center justify-center">
                       <Sparkles className="text-purple-500" size={48} />
@@ -257,9 +257,9 @@ const Dashboard = () => {
             </div>
 
             {/* Right Column - Widgets */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 h-full">
               {/* Daily Budget Tracker Widget */}
-              <div className="dashboard-card bg-background/90 backdrop-blur-md rounded-3xl p-6 border border-border/40 shadow-lg flex-1">
+              <div className="dashboard-card bg-background/90 backdrop-blur-md rounded-3xl p-6 border border-border/40 shadow-lg flex-1 flex flex-col">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
                     <Wallet className="text-primary" size={20} />
