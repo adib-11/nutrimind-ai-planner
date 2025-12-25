@@ -50,17 +50,10 @@ const GreenLifeLine = () => {
         width: "100%",
         height: "100%",
         zIndex: 0,
+        pointerEvents: "none",
         willChange: "transform",
       }}
     >
-      <defs>
-        <linearGradient id="lineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="hsl(68 100% 42%)" stopOpacity="0.6" />
-          <stop offset="50%" stopColor="hsl(68 100% 50%)" stopOpacity="0.8" />
-          <stop offset="100%" stopColor="hsl(68 100% 42%)" stopOpacity="0.6" />
-        </linearGradient>
-      </defs>
-
       <path
         ref={pathRef}
         d="
@@ -75,9 +68,10 @@ const GreenLifeLine = () => {
           S 20 950, 50 1000
         "
         fill="none"
-        stroke="url(#lineGradient)"
-        strokeWidth="0.4"
+        stroke="#C4D600"
+        strokeWidth="4"
         strokeLinecap="round"
+        opacity="0.6"
         style={{ willChange: "stroke-dashoffset" }}
       />
     </svg>

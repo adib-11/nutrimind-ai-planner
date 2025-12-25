@@ -8,18 +8,15 @@ gsap.registerPlugin(ScrollTrigger);
 const problemBubbles = [
   {
     text: "Western Apps ignore our food",
-    position: "top-[15%] left-[10%] md:left-[15%]",
-    delay: 0,
+    position: "top-[15%] left-[10%]",
   },
   {
     text: "Dietitians are expensive (1:65,000 ratio)",
-    position: "top-[30%] right-[5%] md:right-[10%]",
-    delay: 0.2,
+    position: "top-[25%] right-[10%]",
   },
   {
     text: "NCDs like Diabetes are rising",
-    position: "bottom-[25%] left-[5%] md:left-[20%]",
-    delay: 0.4,
+    position: "bottom-[20%] left-1/2 -translate-x-1/2",
   },
 ];
 
