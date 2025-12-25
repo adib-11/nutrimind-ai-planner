@@ -72,15 +72,11 @@ const HowItWorksHorizontal = () => {
     <section
       ref={sectionRef}
       id="about"
-      className="relative overflow-hidden"
+      className="relative bg-secondary overflow-hidden"
     >
-      {/* Background layer - below the life line */}
-      <div className="absolute inset-0 bg-secondary" style={{ zIndex: 1 }} />
-      
       <div
         ref={containerRef}
-        className="h-screen flex items-center overflow-hidden relative"
-        style={{ zIndex: 15 }}
+        className="h-screen flex items-center overflow-hidden"
       >
         <div
           ref={horizontalRef}

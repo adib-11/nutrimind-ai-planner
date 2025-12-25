@@ -41,7 +41,7 @@ const Index = () => {
       </Helmet>
       <CustomCursor />
       <GreenLifeLine />
-      <main className="relative" style={{ zIndex: 10 }}>
+      <main className="relative">
         <Navbar />
         <HeroSection />
         <ProblemSection />
