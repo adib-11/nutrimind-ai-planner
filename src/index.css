@@ -110,6 +110,21 @@
   body {
     @apply bg-background text-foreground font-poppins antialiased;
   }
+
+  /* Hide default cursor on landing page */
+  .cursor-none,
+  .cursor-none * {
+    cursor: none;
+  }
+
+  /* Restore cursor for interactive elements */
+  .cursor-none button,
+  .cursor-none a,
+  .cursor-none input,
+  .cursor-none textarea,
+  .cursor-none select {
+    cursor: none;
+  }
 }
 
 @layer components {

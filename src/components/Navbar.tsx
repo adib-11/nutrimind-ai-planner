@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Smartphone } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const navLinks = [
   { label: "About", href: "#about" },
@@ -13,6 +14,15 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
+
+  const handleGetApp = (e: React.MouseEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Coming Soon!",
+      description: "Our mobile app is coming soon! Stay tuned.",
+    });
+  };
 
   return (
     <motion.nav
@@ -45,8 +55,8 @@ const Navbar = () => {
 
           {/* CTA Button */}
           <div className="hidden md:block">
-            <Button variant="nav-cta" size="default" asChild>
-              <Link to="/auth">Get the App</Link>
+            <Button variant="nav-cta" size="default" onClick={handleGetApp}>
+              Get the App
             </Button>
           </div>
 
@@ -79,8 +89,8 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <Button variant="nav-cta" size="default" className="w-full mt-2" asChild>
-                <Link to="/auth">Get the App</Link>
+              <Button variant="nav-cta" size="default" className="w-full mt-2" onClick={handleGetApp}>
+                Get the App
               </Button>
             </div>
           </motion.div>

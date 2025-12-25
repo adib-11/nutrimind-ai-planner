@@ -86,13 +86,14 @@ const HeroSection = () => {
         });
       });
 
-      // Idle floating animations
+      // Idle floating animations with force3D for GPU acceleration
       gsap.to(plateRef.current, {
         y: 15,
         duration: 3,
         ease: "sine.inOut",
         yoyo: true,
-        repeat: -1
+        repeat: -1,
+        force3D: true
       });
 
       gsap.to(squircleRef.current, {
@@ -100,7 +101,8 @@ const HeroSection = () => {
         duration: 3.5,
         ease: "sine.inOut",
         yoyo: true,
-        repeat: -1
+        repeat: -1,
+        force3D: true
       });
 
       gsap.to(caloriesCardRef.current, {
@@ -208,24 +210,28 @@ const HeroSection = () => {
           src={leaf1}
           alt=""
           className="absolute top-16 left-8 lg:top-20 lg:left-12 w-20 h-20 lg:w-28 lg:h-28 blur-[6px] opacity-70"
+          style={{ willChange: "transform" }}
         />
         <img
           ref={leaf2Ref}
           src={leaf2}
           alt=""
           className="absolute bottom-16 left-12 lg:bottom-24 lg:left-20 w-16 h-16 lg:w-22 lg:h-22 blur-[4px] opacity-75"
+          style={{ willChange: "transform" }}
         />
         <img
           ref={leaf3Ref}
           src={leaf3}
           alt=""
           className="absolute top-20 right-8 lg:top-24 lg:right-12 w-16 h-16 lg:w-24 lg:h-24 blur-[4px] opacity-75"
+          style={{ willChange: "transform" }}
         />
         <img
           ref={leaf4Ref}
           src={leaf1}
           alt=""
           className="absolute bottom-12 right-8 lg:bottom-20 lg:right-16 w-24 h-24 lg:w-32 lg:h-32 blur-[6px] opacity-70 rotate-180"
+          style={{ willChange: "transform" }}
         />
       </div>
 
@@ -272,6 +278,7 @@ const HeroSection = () => {
             <div
               ref={squircleRef}
               className="absolute w-[280px] h-[280px] md:w-[380px] md:h-[380px] lg:w-[450px] lg:h-[450px] bg-primary rounded-[30%_70%_70%_30%_/_30%_30%_70%_70%]"
+              style={{ willChange: "transform" }}
             />
 
             {/* Food Image */}
@@ -281,6 +288,7 @@ const HeroSection = () => {
                 src={foodPlate}
                 alt="Delicious healthy meal - roasted chicken with vegetables"
                 className="w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[480px] lg:h-[480px] object-cover rounded-full shadow-float"
+                style={{ willChange: "transform" }}
               />
             </div>
 
