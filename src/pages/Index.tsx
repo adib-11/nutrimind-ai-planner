@@ -24,7 +24,7 @@ const Index = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="cursor-none"
+      className="cursor-none relative"
     >
       <Helmet>
         <title>NutriMind - AI-Based Food Planner for Health & Fitness</title>
@@ -41,7 +41,7 @@ const Index = () => {
       </Helmet>
       <CustomCursor />
       <GreenLifeLine />
-      <main className="relative">
+      <main className="relative z-10">
         <Navbar />
         <HeroSection />
         <ProblemSection />
