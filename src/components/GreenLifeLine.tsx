@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -7,9 +7,28 @@ gsap.registerPlugin(ScrollTrigger);
 const GreenLifeLine = () => {
   const pathRef = useRef<SVGPathElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
+  const [pageHeight, setPageHeight] = useState(0);
 
   useEffect(() => {
-    if (!pathRef.current || !svgRef.current) return;
+    // Get full document height
+    const updateHeight = () => {
+      setPageHeight(document.documentElement.scrollHeight);
+    };
+    
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    
+    // Delay to ensure page is fully rendered
+    const timeout = setTimeout(updateHeight, 500);
+
+    return () => {
+      window.removeEventListener("resize", updateHeight);
+      clearTimeout(timeout);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!pathRef.current || !svgRef.current || pageHeight === 0) return;
 
     const path = pathRef.current;
     const length = path.getTotalLength();
@@ -34,47 +53,62 @@ const GreenLifeLine = () => {
 
     return () => {
       animation.kill();
+      ScrollTrigger.getAll().forEach(t => {
+        if (t.vars.trigger === "body") t.kill();
+      });
     };
-  }, []);
+  }, [pageHeight]);
+
+  if (pageHeight === 0) return null;
 
   return (
-    <svg
-      ref={svgRef}
+    <div
       className="pointer-events-none"
-      preserveAspectRatio="none"
-      viewBox="0 0 100 1000"
       style={{
         position: "absolute",
         top: 0,
         left: 0,
         width: "100%",
-        height: "100%",
-        zIndex: 0,
-        pointerEvents: "none",
-        willChange: "transform",
+        height: `${pageHeight}px`,
+        zIndex: 1,
+        overflow: "visible",
       }}
     >
-      <path
-        ref={pathRef}
-        d="
-          M 50 0
-          C 50 50, 20 100, 50 150
-          S 80 200, 50 250
-          C 20 300, 80 350, 50 400
-          S 20 450, 50 500
-          C 80 550, 20 600, 50 650
-          S 80 700, 50 750
-          C 20 800, 80 850, 50 900
-          S 20 950, 50 1000
-        "
-        fill="none"
-        stroke="#C4D600"
-        strokeWidth="4"
-        strokeLinecap="round"
-        opacity="0.6"
-        style={{ willChange: "stroke-dashoffset" }}
-      />
-    </svg>
+      <svg
+        ref={svgRef}
+        className="pointer-events-none"
+        preserveAspectRatio="none"
+        viewBox="0 0 100 1000"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          willChange: "transform",
+        }}
+      >
+        <path
+          ref={pathRef}
+          d="
+            M 50 0
+            C 50 80, 15 120, 50 180
+            S 85 240, 50 300
+            C 15 360, 85 420, 50 480
+            S 15 540, 50 600
+            C 85 660, 15 720, 50 780
+            S 85 840, 50 900
+            C 15 960, 50 1000, 50 1000
+          "
+          fill="none"
+          stroke="#C4D600"
+          strokeWidth="3"
+          strokeLinecap="round"
+          opacity="0.7"
+          style={{ willChange: "stroke-dashoffset" }}
+        />
+      </svg>
+    </div>
   );
 };
 
