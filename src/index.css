@@ -212,10 +212,11 @@
 
   /* GPU Hardware Acceleration for smooth animations */
   .green-life-line,
+  .life-line-path,
   .web-dashboard-card,
   .floating-bubble,
   .hero-plate {
-    will-change: transform, opacity;
+    will-change: stroke-dashoffset, transform, opacity;
     transform: translateZ(0);
     backface-visibility: hidden;
   }

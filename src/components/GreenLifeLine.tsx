@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -6,7 +6,7 @@ gsap.registerPlugin(ScrollTrigger);
 
 const GreenLifeLine = () => {
   const pathRef = useRef<SVGPathElement>(null);
-  const [isReady, setIsReady] = useState(false);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     if (!pathRef.current) return;
@@ -14,13 +14,11 @@ const GreenLifeLine = () => {
     const path = pathRef.current;
     const length = path.getTotalLength();
 
-    // Set initial state - line starts mostly hidden
+    // Set initial state - line fully hidden
     gsap.set(path, {
       strokeDasharray: length,
-      strokeDashoffset: length * 0.92,
+      strokeDashoffset: length,
     });
-
-    setIsReady(true);
 
     // Animate the line drawing based on scroll with smooth scrub
     const animation = gsap.to(path, {
@@ -30,53 +28,68 @@ const GreenLifeLine = () => {
         trigger: document.documentElement,
         start: "top top",
         end: "bottom bottom",
-        scrub: 1, // 1-second smoothing for premium feel
+        scrub: 0.5, // Smooth 0.5s lag for premium feel
       },
     });
 
     return () => {
       animation.kill();
+      ScrollTrigger.getAll().forEach(t => t.kill());
     };
   }, []);
 
+  // Custom path that respects layout gutters:
+  // - Start: Top center (50%) behind Hero H1
+  // - Segment 1: Straight down to Problem section center
+  // - Segment 2: Curve LEFT to 12% for Features (left gutter next to text)
+  // - Segment 3: Curve back to CENTER (50%) for Impact grid
+  // - Segment 4: Flow down to Pricing and fade
+  const pathD = `
+    M 50 0
+    L 50 8
+    Q 50 12, 50 15
+    L 50 22
+    Q 50 26, 30 30
+    Q 12 34, 12 40
+    L 12 52
+    Q 12 58, 30 62
+    Q 50 66, 50 72
+    L 50 82
+    Q 50 88, 50 92
+    L 50 100
+  `;
+
   return (
     <svg
-      className="green-life-line fixed top-0 left-0 w-screen h-screen pointer-events-none"
+      ref={svgRef}
+      className="green-life-line absolute inset-0 w-full h-full pointer-events-none"
       style={{ 
-        zIndex: 50, // Above content
-        mixBlendMode: "multiply",
+        zIndex: 0,
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
       }}
       viewBox="0 0 100 100"
       preserveAspectRatio="none"
       aria-hidden="true"
     >
-      {/* Glow filter for premium look */}
-      <defs>
-        <filter id="greenGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="0.4" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      {/* The winding S-curve path - lime green connector */}
+      {/* The winding path - lime green connector */}
       <path
         ref={pathRef}
-        d="
-          M 50 0
-          Q 15 12, 50 25
-          T 50 50
-          Q 85 62, 50 75
-          T 50 100
-        "
+        className="life-line-path"
+        d={pathD}
         fill="none"
-        stroke="#C4D600"
-        strokeWidth="1"
+        stroke="hsl(68, 100%, 42%)"
+        strokeWidth="0.8"
         strokeLinecap="round"
-        opacity="0.75"
-        filter="url(#greenGlow)"
+        strokeLinejoin="round"
+        opacity="0.4"
+        style={{
+          willChange: "stroke-dashoffset",
+          transform: "translateZ(0)",
+        }}
       />
     </svg>
   );
