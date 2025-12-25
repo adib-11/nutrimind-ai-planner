@@ -233,8 +233,11 @@ const ImpactVisionSection = () => {
   }, []);
 
   return (
-    <section ref={sectionRef} className="py-20 lg:py-28 bg-secondary">
-      <div className="container mx-auto px-4 lg:px-8">
+    <section ref={sectionRef} className="py-20 lg:py-28 relative">
+      {/* Background layer - below the life line */}
+      <div className="absolute inset-0 bg-secondary" style={{ zIndex: 1 }} />
+      
+      <div className="container mx-auto px-4 lg:px-8 relative" style={{ zIndex: 15 }}>
         {/* Header */}
         <div ref={headerRef} className="text-center mb-16">
           <p className="text-sm font-semibold uppercase tracking-widest text-primary mb-3">

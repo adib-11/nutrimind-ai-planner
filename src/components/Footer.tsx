@@ -17,8 +17,11 @@ const Footer = () => {
   ];
 
   return (
-    <footer id="contact" className="py-8 bg-background border-t border-border">
-      <div className="container mx-auto px-4 lg:px-8">
+    <footer id="contact" className="py-8 relative border-t border-border">
+      {/* Background layer - below the life line */}
+      <div className="absolute inset-0 bg-background" style={{ zIndex: 1 }} />
+      
+      <div className="container mx-auto px-4 lg:px-8 relative" style={{ zIndex: 15 }}>
         <div className="flex flex-col md:flex-row items-center justify-between gap-6">
           {/* Logo */}
           <div className="font-bold text-xl text-foreground">

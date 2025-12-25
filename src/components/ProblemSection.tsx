@@ -107,13 +107,16 @@ const ProblemSection = () => {
   return (
     <section
       ref={sectionRef}
-      className="relative min-h-screen bg-secondary flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary to-secondary pointer-events-none" />
+      {/* Background layer - below the life line */}
+      <div className="absolute inset-0 bg-secondary" style={{ zIndex: 1 }} />
       
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* Background decoration - above bg, below life line */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-secondary to-secondary pointer-events-none" style={{ zIndex: 2 }} />
+      
+      {/* Floating particles - above life line */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 6 }}>
         {[...Array(15)].map((_, i) => (
           <div
             key={i}
@@ -127,7 +130,7 @@ const ProblemSection = () => {
         ))}
       </div>
 
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="container mx-auto px-4 relative" style={{ zIndex: 15 }}>
         {/* Main Question Text */}
         <div
           ref={textRef}
