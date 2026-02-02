@@ -1,17 +1,41 @@
 import { useRef, useEffect } from "react";
-import { CalendarDays, Sparkles, Wallet, Lightbulb, Flame } from "lucide-react";
+import { CalendarDays, Sparkles, Wallet, Lightbulb, Flame, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import MainLayout from "@/components/MainLayout";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 
 gsap.registerPlugin(useGSAP);
 
 const Dashboard = () => {
+  const { signOut, user } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  
   const budgetUsed = 180;
   const budgetTotal = 250;
   const budgetProgress = (budgetUsed / budgetTotal) * 100;
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+      navigate("/auth");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   // Refs for GSAP targeting
   const containerRef = useRef<HTMLDivElement>(null);
@@ -162,6 +186,18 @@ const Dashboard = () => {
     <MainLayout>
       <div ref={containerRef} className="flex-1 flex flex-col h-full">
         <main className="flex-1 flex flex-col p-6 md:p-8 overflow-auto pb-20 md:pb-8 h-full">
+          {/* Logout Button - Top Right */}
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="gap-2"
+            >
+              <LogOut size={18} />
+              Sign Out
+            </Button>
+          </div>
+
           {/* Welcome Banner */}
           <div
             ref={bannerRef}
@@ -169,7 +205,7 @@ const Dashboard = () => {
           >
             <div className="z-10">
               <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                Good Morning, User! 👋
+                Good Morning, {user?.user_metadata?.full_name || user?.email || 'User'}! 👋
               </h1>
               <p className="text-muted-foreground mt-2 text-base md:text-lg">
                 Ready to fuel your body today?

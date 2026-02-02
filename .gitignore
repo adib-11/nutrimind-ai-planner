@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentation and workflow files
+docs/
+_bmad/
+.agent/
+.claude/

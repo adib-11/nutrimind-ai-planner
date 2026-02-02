@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { 
   User, 
   Heart, 
@@ -18,6 +19,11 @@ import {
 } from "lucide-react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
+import { supabase } from "@/lib/supabase";
+import { BiometricsStep } from "@/components/onboarding/BiometricsStep";
+import type { BiometricsFormData } from "@/lib/validations/biometrics";
+import type { BiometricsCalculations } from "@/types/biometrics";
+import type { HealthConditions } from "@/types/health-profile";
 
 gsap.registerPlugin(useGSAP);
 
@@ -37,6 +43,31 @@ const PREFERENCES = [
   "High Protein"
 ];
 
+const DIET_TYPES = [
+  "Vegetarian",
+  "Non-Vegetarian", 
+  "Vegan",
+  "Pescatarian"
+];
+
+const ALLERGEN_OPTIONS = [
+  "Peanuts",
+  "Dairy",
+  "Eggs",
+  "Shellfish",
+  "Gluten",
+  "Soy",
+  "Tree Nuts"
+];
+
+const CUISINE_PREFERENCES = [
+  "Bengali",
+  "Western",
+  "Chinese",
+  "Indian",
+  "Fusion"
+];
+
 const LOADING_MESSAGES = [
   "Analyzing your BMR...",
   "Checking 500+ Local Recipes...",
@@ -51,22 +82,27 @@ const Onboarding = () => {
   const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   
-  // Step 1 data
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-  const [heightFt, setHeightFt] = useState("");
-  const [heightIn, setHeightIn] = useState("");
-  const [currentWeight, setCurrentWeight] = useState("");
-  const [targetWeight, setTargetWeight] = useState("");
+  // Step 1 data - now managed by BiometricsStep component
+  const [biometricsData, setBiometricsData] = useState<BiometricsFormData | null>(null);
+  const [biometricsCalcs, setBiometricsCalcs] = useState<BiometricsCalculations | null>(null);
   
-  // Step 2 data
-  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
-  const [allergies, setAllergies] = useState<string[]>([]);
-  const [allergyInput, setAllergyInput] = useState("");
+  // Step 2 data - Health Conditions (Story 1.6)
+  const [healthConditions, setHealthConditions] = useState<HealthConditions>({
+    hasDiabetes: false,
+    hasHypertension: false,
+    hasHighCholesterol: false,
+    hasGastritis: false,
+  });
   
   // Step 3 data
-  const [budget, setBudget] = useState([250]);
+  const [dietType, setDietType] = useState("Non-Vegetarian");
+  const [spiceLevel, setSpiceLevel] = useState(3);
+  const [budget, setBudget] = useState([200]);
+  const [selectedAllergens, setSelectedAllergens] = useState<string[]>([]);
+  const [selectedCuisines, setSelectedCuisines] = useState<string[]>(["Bengali"]);
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
+  const [allergies, setAllergies] = useState<string[]>([]);
+  const [allergyInput, setAllergyInput] = useState("");
 
   // GSAP Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -217,7 +253,15 @@ const Onboarding = () => {
     }
   }, [isGenerating, navigate]);
 
+  const toggleHealthCondition = (condition: keyof HealthConditions) => {
+    setHealthConditions(prev => ({
+      ...prev,
+      [condition]: !prev[condition],
+    }));
+  };
+
   const toggleCondition = (condition: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    // Deprecated - keeping for backward compatibility with other steps
     // GSAP pop animation on toggle
     gsap.to(e.currentTarget, {
       scale: 1.1,
@@ -226,17 +270,6 @@ const Onboarding = () => {
       repeat: 1,
       ease: "power2.out",
     });
-
-    if (condition === "None") {
-      setSelectedConditions(["None"]);
-    } else {
-      setSelectedConditions(prev => {
-        const filtered = prev.filter(c => c !== "None");
-        return filtered.includes(condition)
-          ? filtered.filter(c => c !== condition)
-          : [...filtered, condition];
-      });
-    }
   };
 
   const togglePreference = (pref: string, e: React.MouseEvent<HTMLButtonElement>) => {
@@ -253,6 +286,40 @@ const Onboarding = () => {
       prev.includes(pref)
         ? prev.filter(p => p !== pref)
         : [...prev, pref]
+    );
+  };
+
+  const toggleAllergen = (allergen: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    // GSAP pop animation on toggle
+    gsap.to(e.currentTarget, {
+      scale: 1.1,
+      duration: 0.15,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.out",
+    });
+
+    setSelectedAllergens(prev =>
+      prev.includes(allergen)
+        ? prev.filter(a => a !== allergen)
+        : [...prev, allergen]
+    );
+  };
+
+  const toggleCuisine = (cuisine: string, e: React.MouseEvent<HTMLButtonElement>) => {
+    // GSAP pop animation on toggle
+    gsap.to(e.currentTarget, {
+      scale: 1.1,
+      duration: 0.15,
+      yoyo: true,
+      repeat: 1,
+      ease: "power2.out",
+    });
+
+    setSelectedCuisines(prev =>
+      prev.includes(cuisine)
+        ? prev.filter(c => c !== cuisine)
+        : [...prev, cuisine]
     );
   };
 
@@ -287,7 +354,13 @@ const Onboarding = () => {
     }
   };
 
-  const handleNext = () => {
+  // Spice level slider scale animation
+  const handleSpiceLevelChange = (value: number[]) => {
+    setSpiceLevel(value[0]);
+    // Optional: add visual feedback similar to budget
+  };
+
+  const handleNext = async () => {
     if (currentStep < 3) {
       setIsTransitioning(true);
       const currentStepRef = currentStep === 1 ? step1Ref : step2Ref;
@@ -304,6 +377,85 @@ const Onboarding = () => {
         },
       });
     } else {
+      // Step 3: Validate budget before proceeding
+      if (budget[0] < 50) {
+        // AC4: Budget validation
+        alert("Minimum budget is ৳50 per day");
+        return;
+      }
+
+      // Combine allergens from predefined and manual input
+      const allAllergens = [...selectedAllergens, ...allergies];
+
+      // Save preferences via Supabase
+      try {
+        // Get authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        
+        if (authError || !user) {
+          console.error('Authentication error during onboarding save:', authError);
+          throw new Error('Not authenticated');
+        }
+
+        // Get User record to get the userId
+        const { data: userData, error: userError } = await supabase
+          .from('User')
+          .select('id')
+          .eq('supabaseAuthId', user.id)
+          .single();
+
+        if (userError || !userData) {
+          console.error('Failed to fetch user record:', userError);
+          throw new Error('User record not found');
+        }
+
+        // Update Biometrics (from Step 1)
+        if (biometricsData && biometricsCalcs) {
+          await supabase
+            .from('Biometrics')
+            .update({
+              age: biometricsData.age,
+              gender: biometricsData.gender,
+              height: biometricsData.height,
+              weight: biometricsData.weight,
+              targetWeight: biometricsData.targetWeight,
+              activityLevel: biometricsData.activityLevel,
+              bmi: biometricsCalcs.bmi,
+              bmr: biometricsCalcs.bmr,
+            })
+            .eq('userId', userData.id);
+        }
+
+        // Update HealthProfile (from Step 2)
+        await supabase
+          .from('HealthProfile')
+          .update(healthConditions)
+          .eq('userId', userData.id);
+
+        // Update Preferences (from Step 3)
+        await supabase
+          .from('Preferences')
+          .update({
+            dietType,
+            allergens: allAllergens,
+            spiceLevel,
+            dailyBudget: budget[0],
+            foodPreferences: selectedCuisines,
+          })
+          .eq('userId', userData.id);
+
+        // Mark onboarding as complete
+        await supabase
+          .from('User')
+          .update({ onboardingCompleted: true })
+          .eq('id', userData.id);
+
+      } catch (error) {
+        console.error('Failed to save onboarding data:', error);
+        alert('Failed to save your preferences. Please try again.');
+        return; // Don't continue if save fails
+      }
+
       // Fade out form, show loading
       gsap.to(formRef.current, {
         opacity: 0,
@@ -315,6 +467,28 @@ const Onboarding = () => {
         },
       });
     }
+  };
+
+  const handleSkipHealthConditions = () => {
+    // AC4: Skip sets all conditions to false and proceeds to Step 3
+    setHealthConditions({
+      hasDiabetes: false,
+      hasHypertension: false,
+      hasHighCholesterol: false,
+      hasGastritis: false,
+    });
+    
+    setIsTransitioning(true);
+    gsap.to(step2Ref.current, {
+      x: -50,
+      opacity: 0,
+      duration: 0.3,
+      ease: "power2.in",
+      onComplete: () => {
+        setCurrentStep(3);
+        setIsTransitioning(false);
+      },
+    });
   };
 
   const handleBack = () => {
@@ -391,197 +565,102 @@ const Onboarding = () => {
             {/* Step Content */}
             <div className="min-h-[400px]">
               {currentStep === 1 && (
-                <div ref={step1Ref} className="space-y-6">
-                  <div className="step1-input">
-                    <h2 className="text-2xl font-bold text-foreground mb-2">
-                      Let's get to know you
-                    </h2>
-                    <p className="text-muted-foreground">
-                      We'll use this to personalize your meal plans
-                    </p>
-                  </div>
-
-                  <div className="step1-input grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="age">Age</Label>
-                      <Input
-                        id="age"
-                        type="number"
-                        placeholder="23"
-                        value={age}
-                        onChange={(e) => setAge(e.target.value)}
-                        className="bg-background/50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="gender">Gender</Label>
-                      <div className="flex gap-2">
-                        {["Male", "Female", "Other"].map((g) => (
-                          <button
-                            key={g}
-                            onClick={() => setGender(g)}
-                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                              gender === g
-                                ? "bg-[#C4D600] text-white shadow-md"
-                                : "bg-background/50 text-muted-foreground hover:bg-background"
-                            }`}
-                          >
-                            {g}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="step1-input space-y-2">
-                    <Label>Height</Label>
-                    <div className="flex gap-4">
-                      <div className="flex-1 relative">
-                        <Input
-                          type="number"
-                          placeholder="5"
-                          value={heightFt}
-                          onChange={(e) => setHeightFt(e.target.value)}
-                          className="bg-background/50 pr-8"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                          ft
-                        </span>
-                      </div>
-                      <div className="flex-1 relative">
-                        <Input
-                          type="number"
-                          placeholder="8"
-                          value={heightIn}
-                          onChange={(e) => setHeightIn(e.target.value)}
-                          className="bg-background/50 pr-8"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                          in
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="step1-input grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="currentWeight">Current Weight</Label>
-                      <div className="relative">
-                        <Input
-                          id="currentWeight"
-                          type="number"
-                          placeholder="75"
-                          value={currentWeight}
-                          onChange={(e) => setCurrentWeight(e.target.value)}
-                          className="bg-background/50 pr-10"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                          kg
-                        </span>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="targetWeight">Target Weight</Label>
-                      <div className="relative">
-                        <Input
-                          id="targetWeight"
-                          type="number"
-                          placeholder="70"
-                          value={targetWeight}
-                          onChange={(e) => setTargetWeight(e.target.value)}
-                          className="bg-background/50 pr-10"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
-                          kg
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <BiometricsStep
+                  onNext={(data, calcs) => {
+                    setBiometricsData(data);
+                    setBiometricsCalcs(calcs);
+                    setIsTransitioning(true);
+                    setTimeout(() => {
+                      setCurrentStep(2);
+                      setIsTransitioning(false);
+                    }, 100);
+                  }}
+                />
               )}
 
               {currentStep === 2 && (
                 <div ref={step2Ref} className="space-y-6">
                   <div>
                     <h2 className="text-2xl font-bold text-foreground mb-2">
-                      Any medical conditions?
+                      Step 2 of 3: Health Conditions
                     </h2>
                     <p className="text-muted-foreground">
-                      This helps us create a safe meal plan for you
+                      Select any health conditions to personalize your meal plan
                     </p>
                   </div>
 
-                  <div className="space-y-3">
-                    <Label>Select all that apply</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {MEDICAL_CONDITIONS.map((condition) => (
-                        <button
-                          key={condition}
-                          onClick={(e) => toggleCondition(condition, e)}
-                          className={`condition-pill py-2 px-4 rounded-full text-sm font-medium transition-all ${
-                            selectedConditions.includes(condition)
-                              ? "bg-[#C4D600] text-white shadow-md"
-                              : "bg-background/50 text-muted-foreground hover:bg-background border border-border"
-                          }`}
-                        >
-                          {condition}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Upload Prescription (Optional)</Label>
-                    <div
-                      ref={uploadBoxRef}
-                      className="border-2 border-dashed border-[#C4D600]/40 rounded-2xl p-6 text-center hover:border-[#C4D600] transition-colors cursor-pointer bg-[#C4D600]/5"
-                    >
-                      <Upload className="h-8 w-8 mx-auto text-[#C4D600] mb-2" />
-                      <p className="text-sm text-muted-foreground">
-                        Drop your prescription here
-                      </p>
-                      <p className="text-xs text-muted-foreground/60 mt-1">
-                        AI will extract diet restrictions
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Label>Allergies</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="e.g., Prawns, Peanuts"
-                        value={allergyInput}
-                        onChange={(e) => setAllergyInput(e.target.value)}
-                        onKeyPress={(e) => e.key === "Enter" && addAllergy()}
-                        className="bg-background/50"
-                      />
-                      <Button
-                        onClick={addAllergy}
-                        variant="outline"
-                        className="border-[#C4D600] text-[#C4D600] hover:bg-[#C4D600]/10"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                    {allergies.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {allergies.map((allergy) => (
-                          <span
-                            key={allergy}
-                            className="inline-flex items-center gap-1 bg-red-100 text-red-700 py-1 px-3 rounded-full text-sm"
-                          >
-                            {allergy}
-                            <button
-                              onClick={() => removeAllergy(allergy)}
-                              className="hover:bg-red-200 rounded-full p-0.5"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </span>
-                        ))}
+                  <div className="space-y-4">
+                    {/* Diabetes Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border/30 hover:border-[#C4D600]/50 transition-colors">
+                      <div className="flex-1">
+                        <Label htmlFor="diabetes" className="text-base font-medium cursor-pointer">
+                          Diabetes
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Type 2 diabetes management
+                        </p>
                       </div>
-                    )}
+                      <Switch
+                        id="diabetes"
+                        checked={healthConditions.hasDiabetes}
+                        onCheckedChange={() => toggleHealthCondition('hasDiabetes')}
+                        className="data-[state=checked]:bg-[#C4D600]"
+                      />
+                    </div>
+
+                    {/* Hypertension Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border/30 hover:border-[#C4D600]/50 transition-colors">
+                      <div className="flex-1">
+                        <Label htmlFor="hypertension" className="text-base font-medium cursor-pointer">
+                          Hypertension (High Blood Pressure)
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Blood pressure management
+                        </p>
+                      </div>
+                      <Switch
+                        id="hypertension"
+                        checked={healthConditions.hasHypertension}
+                        onCheckedChange={() => toggleHealthCondition('hasHypertension')}
+                        className="data-[state=checked]:bg-[#C4D600]"
+                      />
+                    </div>
+
+                    {/* High Cholesterol Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border/30 hover:border-[#C4D600]/50 transition-colors">
+                      <div className="flex-1">
+                        <Label htmlFor="cholesterol" className="text-base font-medium cursor-pointer">
+                          High Cholesterol
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Cholesterol management
+                        </p>
+                      </div>
+                      <Switch
+                        id="cholesterol"
+                        checked={healthConditions.hasHighCholesterol}
+                        onCheckedChange={() => toggleHealthCondition('hasHighCholesterol')}
+                        className="data-[state=checked]:bg-[#C4D600]"
+                      />
+                    </div>
+
+                    {/* Gastritis Toggle */}
+                    <div className="flex items-center justify-between p-4 bg-background/50 rounded-xl border border-border/30 hover:border-[#C4D600]/50 transition-colors">
+                      <div className="flex-1">
+                        <Label htmlFor="gastritis" className="text-base font-medium cursor-pointer">
+                          Gastritis
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Stomach inflammation management
+                        </p>
+                      </div>
+                      <Switch
+                        id="gastritis"
+                        checked={healthConditions.hasGastritis}
+                        onCheckedChange={() => toggleHealthCondition('hasGastritis')}
+                        className="data-[state=checked]:bg-[#C4D600]"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -590,13 +669,80 @@ const Onboarding = () => {
                 <div ref={step3Ref} className="space-y-6">
                   <div>
                     <h2 className="text-2xl font-bold text-foreground mb-2">
-                      Budget & Taste
+                      Step 3 of 3: Dietary Preferences
                     </h2>
                     <p className="text-muted-foreground">
-                      Set your daily budget and food preferences
+                      Set your dietary preferences and budget
                     </p>
                   </div>
 
+                  {/* Diet Type Selector */}
+                  <div className="space-y-3">
+                    <Label>Diet Type</Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {DIET_TYPES.map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setDietType(type)}
+                          className={`p-4 rounded-xl text-sm font-medium transition-all border ${
+                            dietType === type
+                              ? "bg-[#C4D600] text-white border-[#C4D600] shadow-md"
+                              : "bg-background/50 text-muted-foreground hover:bg-background border-border"
+                          }`}
+                        >
+                          {type}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Allergen Multi-Select */}
+                  <div className="space-y-3">
+                    <Label>Allergens (Select all that apply)</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {ALLERGEN_OPTIONS.map((allergen) => (
+                        <button
+                          key={allergen}
+                          onClick={(e) => toggleAllergen(allergen, e)}
+                          className={`py-2 px-4 rounded-full text-sm font-medium transition-all ${
+                            selectedAllergens.includes(allergen)
+                              ? "bg-red-100 text-red-700 border-2 border-red-300 shadow-sm"
+                              : "bg-background/50 text-muted-foreground hover:bg-background border border-border"
+                          }`}
+                        >
+                          {allergen}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Spice Level Slider */}
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <Label>Spice Level</Label>
+                      <span className="text-sm font-semibold text-[#C4D600]">
+                        {spiceLevel === 1 && "Mild"}
+                        {spiceLevel === 2 && "Slightly Spicy"}
+                        {spiceLevel === 3 && "Medium"}
+                        {spiceLevel === 4 && "Spicy"}
+                        {spiceLevel === 5 && "Very Spicy"}
+                      </span>
+                    </div>
+                    <Slider
+                      value={[spiceLevel]}
+                      onValueChange={handleSpiceLevelChange}
+                      max={5}
+                      min={1}
+                      step={1}
+                      className="py-4"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Mild (1)</span>
+                      <span>Very Spicy (5)</span>
+                    </div>
+                  </div>
+
+                  {/* Daily Budget */}
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <Label>Daily Budget Limit</Label>
@@ -610,31 +756,32 @@ const Onboarding = () => {
                     <Slider
                       value={budget}
                       onValueChange={handleBudgetChange}
-                      max={1000}
-                      min={100}
-                      step={50}
+                      max={500}
+                      min={50}
+                      step={10}
                       className="py-4"
                     />
                     <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>৳100</span>
-                      <span>৳1000</span>
+                      <span>৳50</span>
+                      <span>৳500</span>
                     </div>
                   </div>
 
+                  {/* Food Preference Tags (Cuisine) */}
                   <div className="space-y-3">
-                    <Label>Food Preferences</Label>
+                    <Label>Cuisine Preferences</Label>
                     <div className="flex flex-wrap gap-2">
-                      {PREFERENCES.map((pref) => (
+                      {CUISINE_PREFERENCES.map((cuisine) => (
                         <button
-                          key={pref}
-                          onClick={(e) => togglePreference(pref, e)}
+                          key={cuisine}
+                          onClick={(e) => toggleCuisine(cuisine, e)}
                           className={`preference-pill py-2 px-4 rounded-full text-sm font-medium transition-all ${
-                            selectedPreferences.includes(pref)
+                            selectedCuisines.includes(cuisine)
                               ? "bg-[#C4D600] text-white shadow-md"
                               : "bg-background/50 text-muted-foreground hover:bg-background border border-border"
                           }`}
                         >
-                          {pref}
+                          {cuisine}
                         </button>
                       ))}
                     </div>
@@ -645,15 +792,30 @@ const Onboarding = () => {
                       Your Plan Summary
                     </h4>
                     <ul className="text-sm text-muted-foreground space-y-1">
+                      <li>• Diet type: {dietType}</li>
                       <li>• Daily budget: ৳{budget[0]}</li>
-                      {selectedConditions.length > 0 && !selectedConditions.includes("None") && (
-                        <li>• Optimized for: {selectedConditions.join(", ")}</li>
+                      <li>• Spice level: {spiceLevel}/5</li>
+                      {biometricsCalcs && (
+                        <>
+                          <li>• BMI: {biometricsCalcs.bmi} ({biometricsCalcs.bmiCategory})</li>
+                          <li>• BMR: {biometricsCalcs.bmr} calories/day</li>
+                        </>
                       )}
-                      {allergies.length > 0 && (
-                        <li>• Avoiding: {allergies.join(", ")}</li>
+                      {(healthConditions.hasDiabetes || healthConditions.hasHypertension || healthConditions.hasHighCholesterol || healthConditions.hasGastritis) && (
+                        <li>• Optimized for: {
+                          [
+                            healthConditions.hasDiabetes && 'Diabetes',
+                            healthConditions.hasHypertension && 'Hypertension',
+                            healthConditions.hasHighCholesterol && 'High Cholesterol',
+                            healthConditions.hasGastritis && 'Gastritis'
+                          ].filter(Boolean).join(', ')
+                        }</li>
                       )}
-                      {selectedPreferences.length > 0 && (
-                        <li>• Preferences: {selectedPreferences.join(", ")}</li>
+                      {(selectedAllergens.length > 0 || allergies.length > 0) && (
+                        <li>• Avoiding: {[...selectedAllergens, ...allergies].join(", ")}</li>
+                      )}
+                      {selectedCuisines.length > 0 && (
+                        <li>• Cuisine: {selectedCuisines.join(", ")}</li>
                       )}
                     </ul>
                   </div>
@@ -662,24 +824,37 @@ const Onboarding = () => {
             </div>
 
             {/* Navigation */}
-            <div className="flex justify-between mt-8 pt-6 border-t border-border/30">
-              <Button
-                variant="ghost"
-                onClick={handleBack}
-                disabled={currentStep === 1}
-                className="gap-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Back
-              </Button>
-              <Button
-                onClick={handleNext}
-                className="bg-[#C4D600] hover:bg-[#b3c500] text-white gap-2 px-8"
-              >
-                {currentStep === 3 ? "Generate My Plan" : "Next"}
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            {currentStep !== 1 && (
+              <div className="flex justify-between mt-8 pt-6 border-t border-border/30">
+                <Button
+                  variant="ghost"
+                  onClick={handleBack}
+                  disabled={currentStep === 1}
+                  className="gap-2"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Back
+                </Button>
+                <div className="flex gap-3">
+                  {currentStep === 2 && (
+                    <Button
+                      variant="ghost"
+                      onClick={handleSkipHealthConditions}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Skip
+                    </Button>
+                  )}
+                  <Button
+                    onClick={handleNext}
+                    className="bg-[#C4D600] hover:bg-[#b3c500] text-white gap-2 px-8"
+                  >
+                    {currentStep === 3 ? "Complete Onboarding" : "Next"}
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div

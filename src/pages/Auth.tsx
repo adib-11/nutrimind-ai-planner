@@ -1,33 +1,305 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Mail, Lock, User, Loader2 } from "lucide-react";
+import { ArrowLeft, Mail, Lock, User, Loader2, Check, X, Eye, EyeOff } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import {
+  registerSchema,
+  loginSchema,
+  checkPasswordStrength,
+  type RegisterFormData,
+  type LoginFormData,
+  type PasswordStrength,
+} from "@/lib/validations/auth";
 
 const Auth = () => {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordStrength, setPasswordStrength] = useState<PasswordStrength | null>(null);
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // AC4: Auto-redirect to Dashboard if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, authLoading, navigate]);
+
+  // Register form
+  const registerForm = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onBlur",
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  // Login form
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  // Watch password for strength indicator
+  const watchPassword = registerForm.watch("password");
+
+  useEffect(() => {
+    if (watchPassword) {
+      setPasswordStrength(checkPasswordStrength(watchPassword));
+    } else {
+      setPasswordStrength(null);
+    }
+  }, [watchPassword]);
+
+  // Handle registration (AC2, AC3, AC4, AC5, AC6, AC7)
+  const handleRegister = async (data: RegisterFormData) => {
     setIsLoading(true);
-    // Simulate auth and redirect to dashboard
-    setTimeout(() => {
+
+    // Check if Supabase is configured
+    if (!isSupabaseConfigured()) {
+      toast({
+        title: "Configuration Error",
+        description: "Supabase is not configured. Please set up environment variables.",
+        variant: "destructive",
+      });
       setIsLoading(false);
-      navigate("/dashboard");
-    }, 1500);
+      return;
+    }
+
+    try {
+      // Register with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            name: data.name,
+          },
+        },
+      });
+
+      if (authError) {
+        // Handle duplicate email (AC6)
+        if (authError.message.toLowerCase().includes("already registered") || 
+            authError.message.toLowerCase().includes("user already registered")) {
+          registerForm.setError("email", {
+            type: "manual",
+            message: "Email already registered. Please log in.",
+          });
+          toast({
+            title: "Email already registered",
+            description: "Please log in or use a different email.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Registration failed",
+            description: authError.message,
+            variant: "destructive",
+          });
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        toast({
+          title: "Registration failed",
+          description: "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // AC7: Show verification email message
+      if (authData.user && !authData.session) {
+        toast({
+          title: "Verification email sent!",
+          description: "Please check your inbox to verify your email address.",
+        });
+      }
+
+      // AC2: Success - redirect to onboarding
+      toast({
+        title: "Account created!",
+        description: "Let's set up your profile.",
+      });
+
+      navigate("/onboarding");
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast({
+        title: "Registration failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle login (AC1, AC2, AC3)
+  const handleLogin = async (data: LoginFormData) => {
+    setIsLoading(true);
+
+    if (!isSupabaseConfigured()) {
+      toast({
+        title: "Configuration Error",
+        description: "Supabase is not configured. Please set up environment variables.",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      // AC1: Authenticate via Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      // AC2 & AC3: Generic error for invalid credentials (security)
+      if (authError) {
+        toast({
+          title: "Login failed",
+          description: "Invalid email or password",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (authData.session) {
+        // AC1: JWT token is automatically stored by Supabase SDK in localStorage
+        // Check onboarding status to determine redirect destination
+        const { data: userProfile } = await supabase
+          .from('User')
+          .select('onboardingCompleted')
+          .eq('supabaseAuthId', authData.user?.id)
+          .single();
+
+        toast({
+          title: "Welcome back!",
+          description: "You have been logged in successfully.",
+        });
+
+        // AC1: Redirect based on onboarding status
+        if (userProfile?.onboardingCompleted) {
+          navigate("/dashboard");
+        } else {
+          navigate("/onboarding");
+        }
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "Login failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle Google OAuth
+  const handleGoogleAuth = async () => {
+    if (!isSupabaseConfigured()) {
+      toast({
+        title: "Configuration Error",
+        description: "Supabase is not configured. Please set up environment variables.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: "Google sign-in failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Google auth error:", error);
+      toast({
+        title: "Google sign-in failed",
+        description: "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    }
   };
 
   const formVariants = {
     enter: { opacity: 0, y: 10 },
     center: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
+  };
+
+  // Password strength indicator component
+  const PasswordStrengthIndicator = () => {
+    if (!passwordStrength || !watchPassword) return null;
+
+    const requirements = [
+      { key: "hasMinLength", label: "At least 8 characters", met: passwordStrength.hasMinLength },
+      { key: "hasUppercase", label: "One uppercase letter", met: passwordStrength.hasUppercase },
+      { key: "hasLowercase", label: "One lowercase letter", met: passwordStrength.hasLowercase },
+      { key: "hasNumber", label: "One number", met: passwordStrength.hasNumber },
+      { key: "hasSpecialChar", label: "One special character", met: passwordStrength.hasSpecialChar },
+    ];
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, height: 0 }}
+        animate={{ opacity: 1, height: "auto" }}
+        exit={{ opacity: 0, height: 0 }}
+        className="mt-2 space-y-1"
+      >
+        {requirements.map((req) => (
+          <div key={req.key} className="flex items-center gap-2 text-xs">
+            {req.met ? (
+              <Check className="w-3 h-3 text-green-500" />
+            ) : (
+              <X className="w-3 h-3 text-muted-foreground" />
+            )}
+            <span className={req.met ? "text-green-500" : "text-muted-foreground"}>
+              {req.label}
+            </span>
+          </div>
+        ))}
+      </motion.div>
+    );
   };
 
   return (
@@ -97,7 +369,9 @@ const Auth = () => {
               </h1>
             </Link>
             <p className="text-muted-foreground text-base mt-3">
-              Welcome back to your healthy journey.
+              {activeTab === "login"
+                ? "Welcome back to your healthy journey."
+                : "Start your personalized nutrition journey."}
             </p>
           </CardHeader>
 
@@ -120,7 +394,7 @@ const Auth = () => {
                       exit="exit"
                       transition={{ duration: 0.2, ease: "easeOut" }}
                     >
-                      <form onSubmit={handleSubmit} className="space-y-5">
+                      <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-5">
                         <div className="space-y-2">
                           <Label htmlFor="email-login">Email</Label>
                           <div className="relative">
@@ -129,10 +403,13 @@ const Auth = () => {
                               id="email-login"
                               type="email"
                               placeholder="you@example.com"
-                              className="pl-10 h-11"
-                              required
+                              className={`pl-10 h-11 ${loginForm.formState.errors.email ? "border-destructive" : ""}`}
+                              {...loginForm.register("email")}
                             />
                           </div>
+                          {loginForm.formState.errors.email && (
+                            <p className="text-sm text-destructive">{loginForm.formState.errors.email.message}</p>
+                          )}
                         </div>
 
                         <div className="space-y-2">
@@ -141,21 +418,31 @@ const Auth = () => {
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                             <Input
                               id="password-login"
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="••••••••"
-                              className="pl-10 h-11"
-                              required
+                              className={`pl-10 pr-10 h-11 ${loginForm.formState.errors.password ? "border-destructive" : ""}`}
+                              {...loginForm.register("password")}
                             />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                           </div>
+                          {loginForm.formState.errors.password && (
+                            <p className="text-sm text-destructive">{loginForm.formState.errors.password.message}</p>
+                          )}
                         </div>
 
                         <div className="flex justify-end">
-                          <button
-                            type="button"
+                          <Link
+                            to="/auth/reset-password"
                             className="text-sm text-muted-foreground hover:text-primary transition-colors"
                           >
                             Forgot Password?
-                          </button>
+                          </Link>
                         </div>
 
                         <Button
@@ -185,7 +472,8 @@ const Auth = () => {
                       exit="exit"
                       transition={{ duration: 0.2, ease: "easeOut" }}
                     >
-                      <form onSubmit={handleSubmit} className="space-y-5">
+                      <form onSubmit={registerForm.handleSubmit(handleRegister)} className="space-y-5">
+                        {/* AC1: Full Name field */}
                         <div className="space-y-2">
                           <Label htmlFor="name">Full Name</Label>
                           <div className="relative">
@@ -194,12 +482,16 @@ const Auth = () => {
                               id="name"
                               type="text"
                               placeholder="John Doe"
-                              className="pl-10 h-11"
-                              required
+                              className={`pl-10 h-11 ${registerForm.formState.errors.name ? "border-destructive" : ""}`}
+                              {...registerForm.register("name")}
                             />
                           </div>
+                          {registerForm.formState.errors.name && (
+                            <p className="text-sm text-destructive">{registerForm.formState.errors.name.message}</p>
+                          )}
                         </div>
 
+                        {/* AC1 & AC4: Email field with validation */}
                         <div className="space-y-2">
                           <Label htmlFor="email-register">Email</Label>
                           <div className="relative">
@@ -208,34 +500,74 @@ const Auth = () => {
                               id="email-register"
                               type="email"
                               placeholder="you@example.com"
-                              className="pl-10 h-11"
-                              required
+                              className={`pl-10 h-11 ${registerForm.formState.errors.email ? "border-destructive" : ""}`}
+                              {...registerForm.register("email")}
                             />
                           </div>
+                          {registerForm.formState.errors.email && (
+                            <p className="text-sm text-destructive">{registerForm.formState.errors.email.message}</p>
+                          )}
                         </div>
 
+                        {/* AC1 & AC3: Password field with strength indicator */}
                         <div className="space-y-2">
                           <Label htmlFor="password-register">Password</Label>
                           <div className="relative">
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                             <Input
                               id="password-register"
-                              type="password"
+                              type={showPassword ? "text" : "password"}
                               placeholder="••••••••"
-                              className="pl-10 h-11"
-                              required
+                              className={`pl-10 pr-10 h-11 ${registerForm.formState.errors.password ? "border-destructive" : ""}`}
+                              {...registerForm.register("password")}
                             />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                           </div>
+                          {registerForm.formState.errors.password && (
+                            <p className="text-sm text-destructive">{registerForm.formState.errors.password.message}</p>
+                          )}
+                          <PasswordStrengthIndicator />
+                        </div>
+
+                        {/* AC1 & AC5: Confirm Password field */}
+                        <div className="space-y-2">
+                          <Label htmlFor="confirm-password">Confirm Password</Label>
+                          <div className="relative">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+                            <Input
+                              id="confirm-password"
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              className={`pl-10 pr-10 h-11 ${registerForm.formState.errors.confirmPassword ? "border-destructive" : ""}`}
+                              {...registerForm.register("confirmPassword")}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
+                          </div>
+                          {registerForm.formState.errors.confirmPassword && (
+                            <p className="text-sm text-destructive">{registerForm.formState.errors.confirmPassword.message}</p>
+                          )}
                         </div>
 
                         <Button
                           type="submit"
                           className="w-full h-11 bg-primary text-primary-foreground hover:bg-primary/90"
-                          disabled={isLoading}
+                          disabled={isLoading || !passwordStrength?.isValid}
                         >
                           {isLoading ? (
                             <>
-                              <Loader2 className="animate-spin" size={18} />
+                              <Loader2 className="animate-spin mr-2" size={18} />
                               Creating Account...
                             </>
                           ) : (
@@ -257,7 +589,12 @@ const Auth = () => {
               </div>
 
               {/* Social Login */}
-              <Button variant="outline" className="w-full h-11 gap-2">
+              <Button 
+                variant="outline" 
+                className="w-full h-11 gap-2"
+                onClick={handleGoogleAuth}
+                type="button"
+              >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
